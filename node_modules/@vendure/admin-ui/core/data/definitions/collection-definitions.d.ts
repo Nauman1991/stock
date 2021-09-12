@@ -1,0 +1,9 @@
+export declare const GET_COLLECTION_FILTERS: import("graphql").DocumentNode;
+export declare const COLLECTION_FRAGMENT: import("graphql").DocumentNode;
+export declare const GET_COLLECTION_LIST: import("graphql").DocumentNode;
+export declare const GET_COLLECTION: import("graphql").DocumentNode;
+export declare const CREATE_COLLECTION: import("graphql").DocumentNode;
+export declare const UPDATE_COLLECTION: import("graphql").DocumentNode;
+export declare const MOVE_COLLECTION: import("graphql").DocumentNode;
+export declare const DELETE_COLLECTION: import("graphql").DocumentNode;
+export declare const GET_COLLECTION_CONTENTS: import("graphql").DocumentNode;

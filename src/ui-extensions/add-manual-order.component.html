@@ -1,0 +1,146 @@
+<div>
+
+    <h1>Enter Customer</h1>
+    <div class="mainCustomerDiv">
+        <div class="container">
+            <div class="row">
+
+                <div class="childCustomerDiv">
+                    <div class="floating-label">
+                        <input class="form-control customerInput" type="text" name="first-name" required [(ngModel)]="manualOrder.firstName" #firstName="ngModel">
+                        <label for="first">Name</label>
+                    </div>
+                    <div class="floating-label">
+                        <input class="form-control customerInput" type="text" name="phone-number" required [(ngModel)]="manualOrder.phoneNumber" #phoneNumber="ngModel">
+                        <label for="last">Phone Number</label>
+                    </div>
+                </div>
+
+                <div class="childCustomerDiv">
+                    <div class="floating-label">
+                        <input class="form-control customerInput" type="text" name="surname" required [(ngModel)]="manualOrder.lastName" #lastName="ngModel">
+                        <label for="last">Surname</label>
+                    </div>
+                    <div class="floating-label">
+                        <input class="form-control customerInput" type="text" name="whatsapp_number" required [(ngModel)]="manualOrder.whatsapp_number" #whatsapp_number="ngModel">
+                        <label for="last">Whatsapp Number</label>
+                    </div>
+                </div>
+
+                <div class="childCustomerDiv">
+                    <div class="floating-label">
+                        <select class="form-control" style="width: 75% !important;
+                        font-size: 13px;
+                        height: 38px !important;" [(ngModel)]="manualOrder.country" (change)="showShippingModal(content)" name="country" #country required>
+                                     <option value="">Select Country</option>
+                                     <option *ngFor="let country of countries" [value]="country.id" >
+                                        {{country.name}}
+                                     </option>
+                            </select>
+                    </div>
+                    <div class="floating-label">
+                        <select class="form-control" style="width: 75% !important;
+                        font-size: 13px;
+                        height: 38px !important;
+                    " [(ngModel)]="manualOrder.website" name="website" #website required>
+                            <option value="">Select Website</option>
+                            <option *ngFor="let web2 of customerWebsite" [value]="web2.id" >
+                               {{web2.name}}
+                            </option>
+                   </select>
+                    </div>
+                </div>
+
+                <div class="childCustomerDiv">
+                    <div class="floating-label">
+                        <input class="form-control customerInput" type="text" name="city" required [(ngModel)]="manualOrder.city" #address="ngModel">
+                        <label for="last">City</label>
+                    </div>
+                    <div class="floating-label">
+                        <input class="form-control customerInput" type="text" name="username_website" required [(ngModel)]="manualOrder.username_website" #username_website="ngModel">
+                        <label for="last">Username on Website</label>
+                    </div>
+                </div>
+
+                <div class="childCustomerDiv">
+                    <div class="floating-label">
+                        <input class="form-control customerInput" style="width: 37% !important;" type="text" name="address" required [(ngModel)]="manualOrder.address" #address="ngModel">
+                        <label for="last">Address</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <div class="submit-section mt-4">
+            <button type="submit" class="btn btn-primary submit-btn">Cancel</button>
+            <button type="submit" (click)="selectProduct(productModel)" class="btn btn-primary submit-btn">Select Product</button>
+        </div>
+    </div>
+
+</div>
+
+<ng-template #content let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">Select Shipping</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+        <div class="floating-label">
+            <select class="form-control" style="width: 75% !important;
+            font-size: 13px;
+            height: 38px !important;" [(ngModel)]="shippingCarrierModal.shipping" name="shipping" #shipping required>
+                <option value="">Select Carrier</option>
+                <option *ngFor="let shipping of shippingCarrier" [value]="shipping.id" >
+                   {{shipping.name}}
+                </option>
+            </select>
+        </div>
+        <div class="floating-label">
+            <select class="form-control" style="width: 75% !important;
+            font-size: 13px;
+            height: 38px !important;" [(ngModel)]="shippingCarrierModal.city" name="city" #city required>
+                <option value="">Select City</option>
+            </select>
+        </div>
+        <div class="floating-label">
+            <select class="form-control" style="width: 75% !important;
+            font-size: 13px;
+            height: 38px !important;" [(ngModel)]="shippingCarrierModal.street" name="street" #street required>
+                <option value="">Select Street</option>
+            </select>
+        </div>
+        <div class="floating-label">
+            <textarea name="address_complement" id="" cols="46" rows="3" [(ngModel)]="shippingCarrierModal.address_complement"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="modal.close('Close click')">Close</button>
+    </div>
+</ng-template>
+
+
+<ng-template #productModel let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">Select Product</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+        <div class="floating-label product-div" *ngFor="let product of products;let i = index">
+            <div class="product_price">${{product.product_varient_price}}</div>
+            <input type="checkbox" name="products" [value]="product.product_varient_id" (change)="productSelect(product,$event.target.checked,i)" />
+            <img [src]="product.product_varient_image_source" alt="" class="img-fluid product-image"> <span class="product_name">{{product.product_varient_name}}</span>
+            <div class="product_stock">{{product.product_varient_stock_on_hand}} <input type="text" class="product_stock_input" (input)="changeProductStock(product,i)" [(ngModel)]="productStock[i]"></div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="modal.close('Close click')">Close</button>
+        <button type="button" class="btn btn-light" (click)="saveOrder()">Next</button>
+    </div>
+</ng-template>

@@ -1,0 +1,15 @@
+{
+  "name": "vendure-admin-ui",
+  "dependencies": {
+    "@ng-bootstrap/ng-bootstrap": "9.1.3",
+    "bootstrap": "^4.5.3",
+    "ngx-bootstrap": "7.0.0"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build --prod"
+  }
+}

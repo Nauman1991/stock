@@ -1,0 +1,10 @@
+export declare const FACET_VALUE_FRAGMENT: import("graphql").DocumentNode;
+export declare const FACET_WITH_VALUES_FRAGMENT: import("graphql").DocumentNode;
+export declare const CREATE_FACET: import("graphql").DocumentNode;
+export declare const UPDATE_FACET: import("graphql").DocumentNode;
+export declare const DELETE_FACET: import("graphql").DocumentNode;
+export declare const CREATE_FACET_VALUES: import("graphql").DocumentNode;
+export declare const UPDATE_FACET_VALUES: import("graphql").DocumentNode;
+export declare const DELETE_FACET_VALUES: import("graphql").DocumentNode;
+export declare const GET_FACET_LIST: import("graphql").DocumentNode;
+export declare const GET_FACET_WITH_VALUES: import("graphql").DocumentNode;

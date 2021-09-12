@@ -1,0 +1,15 @@
+export declare const ROLE_FRAGMENT: import("graphql").DocumentNode;
+export declare const ADMINISTRATOR_FRAGMENT: import("graphql").DocumentNode;
+export declare const GET_ADMINISTRATORS: import("graphql").DocumentNode;
+export declare const GET_ACTIVE_ADMINISTRATOR: import("graphql").DocumentNode;
+export declare const GET_ADMINISTRATOR: import("graphql").DocumentNode;
+export declare const CREATE_ADMINISTRATOR: import("graphql").DocumentNode;
+export declare const UPDATE_ADMINISTRATOR: import("graphql").DocumentNode;
+export declare const UPDATE_ACTIVE_ADMINISTRATOR: import("graphql").DocumentNode;
+export declare const DELETE_ADMINISTRATOR: import("graphql").DocumentNode;
+export declare const GET_ROLES: import("graphql").DocumentNode;
+export declare const GET_ROLE: import("graphql").DocumentNode;
+export declare const CREATE_ROLE: import("graphql").DocumentNode;
+export declare const UPDATE_ROLE: import("graphql").DocumentNode;
+export declare const DELETE_ROLE: import("graphql").DocumentNode;
+export declare const ASSIGN_ROLE_TO_ADMINISTRATOR: import("graphql").DocumentNode;

@@ -1,0 +1,9 @@
+export declare const SHIPPING_METHOD_FRAGMENT: import("graphql").DocumentNode;
+export declare const GET_SHIPPING_METHOD_LIST: import("graphql").DocumentNode;
+export declare const GET_SHIPPING_METHOD: import("graphql").DocumentNode;
+export declare const GET_SHIPPING_METHOD_OPERATIONS: import("graphql").DocumentNode;
+export declare const CREATE_SHIPPING_METHOD: import("graphql").DocumentNode;
+export declare const UPDATE_SHIPPING_METHOD: import("graphql").DocumentNode;
+export declare const DELETE_SHIPPING_METHOD: import("graphql").DocumentNode;
+export declare const TEST_SHIPPING_METHOD: import("graphql").DocumentNode;
+export declare const TEST_ELIGIBLE_SHIPPING_METHODS: import("graphql").DocumentNode;
