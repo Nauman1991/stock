@@ -381,7 +381,7 @@ fragment order on Order {
 
     saveOrder() {
 
-        let customAPIURL = "http://localhost:5001/addManualOrder";
+        let customAPIURL = "http://3.23.29.252:5001/addManualOrder";
 
         // this.http.post(`${customAPIURL}`, this.manualOrder).subscribe((res: any) => {
         //     debugger;
