@@ -106,7 +106,7 @@ export const config: VendureConfig = {
                             },
                         ],
                     }],
-                    devMode: true,
+                    devMode: false,
                 },
 
             ),

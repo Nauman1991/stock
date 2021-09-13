@@ -9,6 +9,11 @@
                     <div class="floating-label">
                         <input class="form-control customerInput" type="text" name="first-name" required [(ngModel)]="manualOrder.firstName" #firstName="ngModel">
                         <label for="first">Name</label>
+                        <div *ngIf="firstName.invalid && (firstName.dirty || firstName.touched)" class="alert">
+                            <div *ngIf="firstName.errors?.required">
+                                Name is required.
+                            </div>
+                        </div>
                     </div>
                     <div class="floating-label">
                         <input class="form-control customerInput" type="text" name="phone-number" required [(ngModel)]="manualOrder.phoneNumber" #phoneNumber="ngModel">
