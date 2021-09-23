@@ -1,0 +1,130 @@
+<div class="container">
+    <div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Full Name</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Phone Number</th>
+                    <th scope="col">City</th>
+                    <th scope="col">Full Price</th>
+                    <th scope="col">Tracking Number</th>
+                    <th scope="col">Website Type</th>
+                    <th scope="col">Page Name</th>
+                    <th scope="col">Seller Name</th>
+                    <th scope="col">Company Carrier</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let order of orders;let i = index">
+                    <td>{{order.fullName}}</td>
+                    <td>{{order.fullName}}</td>
+                    <td>{{order.phoneNumber}}</td>
+                    <td>{{order.city}}</td>
+                    <td>{{order.subTotal}}</td>
+                    <td>{{order.code}}</td>
+                    <td>{{order.website}}</td>
+                    <td>{{order.pageName}}</td>
+                    <td>{{order.sellerName}}</td>
+                    <td>-</td>
+                    <td>
+                        <a href="javascript:void(0)" (click)="fetchOrderDetail(orderDetail,order.id)">Edit</a>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<ng-template #orderDetail let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">Edit Order</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+        <div class="container">
+            <div class="row">
+                <h1>Product Information</h1>
+                <div class="col-sm-12">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Product name</th>
+                                <th scope="col">SKU</th>
+                                <th scope="col">Unit price</th>
+                                <th scope="col">Quantity</th>
+                                <th scope="col">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of _orderDetail.detail.lines">
+                                <td><img src="{{item.featuredAsset.preview}}" alt="" style="height: 42px;"></td>
+                                <td>{{item.productVariant.name}}</td>
+                                <td>{{item.productVariant.sku}}</td>
+                                <td>{{item.proratedUnitPrice}}</td>
+                                <td>{{item.items.length}}</td>
+                                <td>{{item.discountedLinePrice}}</td>
+
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <h1>Customer Information</h1>
+                <div class="col-sm-12">
+                    <form class="form-inline">
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="exampleInputEmail3">First Name</label> <br>
+                                <input type="text" class="form-control" id="exampleInputEmail3" placeholder="First Name" [(ngModel)]="_orderDetail.customer.firstName" [ngModelOptions]="{standalone: true}">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail3">Surname</label> <br>
+                                <input type="email" class="form-control" id="exampleInputEmail3" placeholder="Last Name" [(ngModel)]="_orderDetail.customer.lastName" [ngModelOptions]="{standalone: true}">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail3">Phone Number</label> <br>
+                                <input type="tel" class="form-control" id="exampleInputEmail3" placeholder="Phone Number" [(ngModel)]="_orderDetail.customer.phoneNumber" [ngModelOptions]="{standalone: true}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="exampleInputEmail3">Whatsapp Number</label> <br>
+                                <input type="text" class="form-control" id="exampleInputEmail3" placeholder="Whatsapp Number" [(ngModel)]="_orderDetail.customer.whatsapp_number" [ngModelOptions]="{standalone: true}">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail3">Website</label> <br>
+                                <input type="text" class="form-control" id="exampleInputEmail3" placeholder="Website" [(ngModel)]="_orderDetail.customer.website" [ngModelOptions]="{standalone: true}">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail3">Username on website</label> <br>
+                                <input type="text" class="form-control" id="exampleInputEmail3" placeholder="Username on website" [(ngModel)]="_orderDetail.customer.username_website" [ngModelOptions]="{standalone: true}">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group">
+                                <label for="exampleInputEmail3">Seller Name</label> <br>
+                                <input type="text" class="form-control" id="exampleInputEmail3" readonly placeholder="Seller Name" [(ngModel)]="_orderDetail.customer.sellerName" [ngModelOptions]="{standalone: true}">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail3">Payment Type</label> <br>
+                                <input type="text" class="form-control" id="exampleInputEmail3" readonly placeholder="Payment Type" [(ngModel)]="_orderDetail.customer.paymentType" [ngModelOptions]="{standalone: true}">
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer ">
+        <button type="button " class="btn btn-light " (click)="modal.close( 'Close click') ">Close</button>
+        <button type="button " class="btn btn-primary" (click)="saveOrder()">Save</button>
+    </div>
+</ng-template>

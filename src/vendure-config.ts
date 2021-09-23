@@ -39,14 +39,14 @@ export const config: VendureConfig = {
     },
     dbConnectionOptions: {
         type: 'mysql',
-        synchronize: true, // turn this off for production
+        synchronize: false, // turn this off for production
         logging: false,
-        database: 'vendure-app',
+        database: 'stock',
         host: 'localhost',
         port: 3306,
         username: 'root',
-        password: '',
-        migrations: [path.join(__dirname, '../migrations/*.ts')],
+        password: '@stock!@#$%'
+        // migrations: [path.join(__dirname, '../migrations/*.ts')],
     },
     paymentOptions: {
         paymentMethodHandlers: [dummyPaymentHandler],
@@ -100,9 +100,21 @@ export const config: VendureConfig = {
                                 ngModuleName: 'AddManualOrderModule',
                             },
                             {
+                                type: 'lazy',
+                                route: 'orderSummary',
+                                ngModuleFileName: 'order-summary.module.ts',
+                                ngModuleName: 'OrderSummaryModule',
+                            },
+                            {
                                 type: 'shared',
                                 ngModuleFileName: 'order-list-custom.module.ts',
                                 ngModuleName: 'OrderListCustomModule',
+                            },
+                            {
+                                type: 'lazy',
+                                route: 'orderView',
+                                ngModuleFileName: 'order-view.module.ts',
+                                ngModuleName: 'OrderViewModule',
                             },
                         ],
                     }],

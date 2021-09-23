@@ -1,0 +1,108 @@
+<div class="container">
+    <div class="row">
+        <h1>Order Summary</h1>
+        <span>Products</span>
+        <div class="col-md-12 summaryMainDiv" *ngFor="let summary of orderSummary.product;">
+            <img src="http://localhost:4200/assets/source/no-image.jpeg " alt=" " class="img-fluid product-image ">
+            <span>{{summary.name}}</span>
+            <div class="priceDiv ">
+                ${{summary.price}}
+            </div>
+            <hr>
+        </div>
+        <div class="col-md-12 summaryMainDiv ">
+            <h4>Total</h4>
+            <div class="priceDiv " style="top:-25px !important ">
+                <span>${{orderTotal}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Status</p>
+            <span style="font-size: 22px;"><strong>New</strong></span>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Customer Name</p>
+            <span style="font-size: 22px;"><strong>{{orderSummary.customer.title}}</strong></span>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Customer ID</p>
+            <span style="font-size: 22px;"><strong>{{orderSummary.customer.customerID}}</strong></span>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Address</p>
+            <span style="font-size: 22px;"><strong>{{orderSummary.customer.address}}</strong></span>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Phone Number</p>
+            <span style="font-size: 22px;"><strong>{{orderSummary.customer.phoneNumber}}</strong></span>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Whatsapp Number</p>
+            <span style="font-size: 22px;"><strong>{{orderSummary.customer.customFields[0].whatsapp_number}}</strong></span>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Shipping Carrier</p>
+            <span style="font-size: 22px;"><strong>Armex</strong></span>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">From Site</p>
+            <span style="font-size: 22px;"><strong>{{orderSummary.customer.customFields[0].websiteName}}</strong></span>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Profile Name</p>
+            <span style="font-size: 22px;"><strong>{{orderSummary.customer.customFields[0].username_website}}</strong></span>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Payment Type</p>
+            <select name="paymentType" id="paymentType" [(ngModel)]="addtionalInfo.paymentType">
+                <option value="Cash">Cash</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Website">Website</option>
+            </select>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Page Name</p>
+            <select name="pageName" id="pageName" [(ngModel)]="addtionalInfo.pageName">
+                <option value="Gifty">Gifty</option>
+                <option value="The Pirate">The Pirate</option>
+                <option value="Dukkan">Dukkan</option>
+                <option value="Venice">Venice</option>
+                <option value="alwan">alwan</option>
+            </select>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Seller Name</p>
+            <select name="sellerName" id="sellerName" [(ngModel)]="addtionalInfo.sellerName">
+                <option value="Bayan">Bayan</option>
+                <option value="Alaa">Ala'a</option>
+                <option value="Merve">Merve</option>
+                <option value="Areej">Areej</option>
+                <option value="Sarah">Sarah</option>
+                <option value="Madi7a">Madi7a</option>
+            </select>
+        </div>
+
+        <div class="col-md-12" style="top: 19px !important;
+        position: relative;">
+            <button (click)="confirmOrder(orderSummary)" style="width: 259px !important;
+            display: block;
+            position: relative;
+            background-color: #7138FF;
+            color: #ffff;">Confirm</button>
+        </div>
+    </div>
+</div>

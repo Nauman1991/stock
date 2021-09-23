@@ -18,7 +18,7 @@ import $ from 'jquery';
             buttonStyle: 'outline',
             onClick : () => {
                 
-                window.location.href = 'http://3.23.29.252:4200/admin/extensions/addManualOrder' ;
+                window.location.href = 'http://3.23.29.252/admin/extensions/addManualOrder' ;
             },
             routerLink: route => {
                 // const id = 'order-list';

@@ -1,0 +1,18 @@
+.summaryMainDiv {
+    max-width: 39%;
+}
+
+.product-image {
+    max-width: 55px;
+    max-height: 45px;
+    margin-left: 5px;
+    margin-right: 10px;
+    padding: 4px;
+}
+
+.priceDiv {
+    float: right;
+    top: 8px !important;
+    display: block;
+    position: relative;
+}
