@@ -98,7 +98,7 @@
         <div class="floating-label">
             <select class="form-control" style="width: 75% !important;
             font-size: 13px;
-            height: 38px !important;" [(ngModel)]="shippingCarrierModal.shipping" name="shipping" #shipping required>
+            height: 38px !important;" [(ngModel)]="shippingCarrierModal.shipping" (change)="fetchCity()" name="shipping" #shipping required>
                 <option value="">Select Carrier</option>
                 <option *ngFor="let shipping of shippingCarrier" [value]="shipping.id" >
                    {{shipping.name}}
@@ -108,16 +108,16 @@
         <div class="floating-label">
             <select class="form-control" style="width: 75% !important;
             font-size: 13px;
-            height: 38px !important;" [(ngModel)]="shippingCarrierModal.city" name="city" #city required>
+            height: 38px !important;" [(ngModel)]="shippingCarrierModal.city" name="city" #city required (change)="changeCityModel()">
                 <option value="">Select City</option>
+                <option value="{{city}}" *ngFor="let city of shippingCitites" >{{city}}</option>
             </select>
         </div>
         <div class="floating-label">
-            <select class="form-control" style="width: 75% !important;
+            <input type="text" style="width: 75% !important;
             font-size: 13px;
-            height: 38px !important;" [(ngModel)]="shippingCarrierModal.street" name="street" #street required>
-                <option value="">Select Street</option>
-            </select>
+            height: 38px !important;" [(ngModel)]="shippingCarrierModal.street" placeholder="Street">
+
         </div>
         <div class="floating-label">
             <textarea name="address_complement" id="" cols="46" rows="3" [(ngModel)]="shippingCarrierModal.address_complement"></textarea>
@@ -125,6 +125,7 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-light" (click)="modal.close('Close click')">Close</button>
+        <button type="button" class="btn btn-light" (click)="modal.close('Close click')">Save</button>
     </div>
 </ng-template>
 

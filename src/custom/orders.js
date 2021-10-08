@@ -2,19 +2,19 @@ const express = require("express");
 const router = express.Router();
 var mysql = require('mysql');
 
-// var con = mysql.createConnection({
-//     host: "localhost",
-//     user: "root",
-//     password: "",
-//     database: "vendure-app"
-// });
-
 var con = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "@stock!@#$%",
-    database: "stock"
+    password: "",
+    database: "vendure-app"
 });
+
+// var con = mysql.createConnection({
+//     host: "localhost",
+//     user: "root",
+//     password: "@stock!@#$%",
+//     database: "stock"
+// });
 
 router.get('/fetchOrders', (req, res) => {
     let orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.* from `order` as o join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country`order by o.id DESC";

@@ -10,47 +10,60 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'orderView',
-    templateUrl: './order-view.component.html',
-    styleUrls: ['./order-view.component.css'],
-    encapsulation: ViewEncapsulation.None,
+  selector: 'orderView',
+  templateUrl: './order-view.component.html',
+  styleUrls: ['./order-view.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 
 export class OrderViewComponent implements OnInit {
 
-    customAPIPATH : string = "http://3.23.29.252:5001";
-    orders:any={};
-    _orderDetail:any={};
-    public querySubscription: Subscription;
+  customAPIPATH: string = "";
+  hostname: string = '';
+  orders: any = {};
+  _orderDetail: any = {};
+  public querySubscription: Subscription;
 
-    constructor(private http: HttpClient,private modalService: NgbModal,private apollo: Apollo) {
-        this.fetchOrders() ;
-
+  constructor(private http: HttpClient, private modalService: NgbModal, private apollo: Apollo) {
+    this.fetchOrders();
+    this.hostname = window.location.hostname;
+    if (this.hostname == 'localhost') {
+      this.customAPIPATH = "http://localhost:5001";
+    } else {
+      this.customAPIPATH = "http://3.23.29.252:5001";
     }
+  }
 
-    ngOnInit() {
-       
+  ngOnInit() {
+
+
+  }
+
+  fetchOrders() {
+    
+    this.hostname = window.location.hostname;
+    if (this.hostname == 'localhost') {
+      this.customAPIPATH = "http://localhost:5001";
+    } else {
+      this.customAPIPATH = "http://3.23.29.252:5001";
     }
+    let customAPIURL = `${this.customAPIPATH}/orders/fetchOrders`;
+    return this.http
+      .get(customAPIURL)
+      .subscribe((resp: any) => {
+        this.orders = resp.data.rows;
+        this.orders.forEach((element: any, key: any) => {
+          let customFields = JSON.parse(element.customFields);
+          this.orders[key].pageName = customFields[0].pageName;
+          this.orders[key].paymentType = customFields[0].paymentType;
+          this.orders[key].sellerName = customFields[0].sellerName;
+        });
+      });
+  }
 
-    fetchOrders(){
-        
-        let customAPIURL = `${this.customAPIPATH}/orders/fetchOrders`;
-        return this.http
-            .get(customAPIURL)
-            .subscribe((resp: any) => {
-                    this.orders = resp.data.rows;
-                    this.orders.forEach((element:any,key:any) => {
-                        let customFields = JSON.parse(element.customFields);
-                        this.orders[key].pageName = customFields[0].pageName; 
-                        this.orders[key].paymentType = customFields[0].paymentType; 
-                        this.orders[key].sellerName = customFields[0].sellerName; 
-                    });
-            });
-    }
+  fetchOrderDetail(template: TemplateRef<any>, orderID: any) {
 
-    fetchOrderDetail(template: TemplateRef<any>,orderID:any){
-
-        const GET_ORDER_DETAIL = gql`
+    const GET_ORDER_DETAIL = gql`
             query GetOrder($id: ID!) {
                 order(id: $id) {
                   ...OrderDetail
@@ -271,40 +284,40 @@ export class OrderViewComponent implements OnInit {
               
           ` ;
 
-        this.querySubscription = this.apollo.watchQuery<any>({
-            query: GET_ORDER_DETAIL,
-            variables : {'id' : orderID}
-        }).valueChanges
-            .subscribe(({ data, loading }) => {
-                let arr:any = [];
-                let orderFind = this.orders.find(function(value,index){
-                    if(value.id === orderID){
-                        arr.push(value);
-                        return value;
-                    }
-                    
-                }); 
-               
-                this._orderDetail.customer = arr[0];
-                this._orderDetail.detail = data.order;
-                this.modalService.open(template, { windowClass: 'shippingModal' , size: 'lg' });
-            });
-        
-    }
+    this.querySubscription = this.apollo.watchQuery<any>({
+      query: GET_ORDER_DETAIL,
+      variables: { 'id': orderID }
+    }).valueChanges
+      .subscribe(({ data, loading }) => {
+        let arr: any = [];
+        let orderFind = this.orders.find(function (value, index) {
+          if (value.id === orderID) {
+            arr.push(value);
+            return value;
+          }
 
-    saveOrder(){
-        let customAPIURL = `${this.customAPIPATH}/orders/editOrder`;
-        const body = { "data": this._orderDetail.customer};
-        const headers = new HttpHeaders()
-            .set('accept', '*/*')
-            .set('content-type', 'application/json')
-            .set('Connection', 'keep-alive')
-        return this.http
-            .post(customAPIURL, body, { headers: headers })
-            .subscribe((resp: any) => {
-                  if(resp.code == 200){
-                      window.location.reload();
-                  }
-            });
-    }
+        });
+
+        this._orderDetail.customer = arr[0];
+        this._orderDetail.detail = data.order;
+        this.modalService.open(template, { windowClass: 'shippingModal', size: 'lg' });
+      });
+
+  }
+
+  saveOrder() {
+    let customAPIURL = `${this.customAPIPATH}/orders/editOrder`;
+    const body = { "data": this._orderDetail.customer };
+    const headers = new HttpHeaders()
+      .set('accept', '*/*')
+      .set('content-type', 'application/json')
+      .set('Connection', 'keep-alive')
+    return this.http
+      .post(customAPIURL, body, { headers: headers })
+      .subscribe((resp: any) => {
+        if (resp.code == 200) {
+          window.location.reload();
+        }
+      });
+  }
 }

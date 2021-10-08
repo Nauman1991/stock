@@ -38,6 +38,8 @@ export class AddManualOrderComponent implements OnInit {
     productStock: any = [];
     modalRef?: BsModalRef;
     url: string = '';
+    hostname:string = '' ;
+    shippingCitites = '' ;
     public querySubscription: Subscription;
 
     customerWebsite = [
@@ -105,8 +107,8 @@ export class AddManualOrderComponent implements OnInit {
         this.shippingCarrierModal.street = "";
         this.shippingCarrierModal.address_complement = "";
 
-        let hostname = window.location.hostname;
-        if (hostname == 'localhost') {
+        this.hostname = window.location.hostname;
+        if (this.hostname == 'localhost') {
             this.url = "http://localhost:4200";
         } else {
             this.url = "http://3.23.29.252:4200";
@@ -353,17 +355,27 @@ fragment order on Order {
 
     changeProductStock(data: any, index: any) {
         if (this.manualOrder.product.length > 0) {
-            this.manualOrder.product = this.manualOrder.product.filter((ele) => {
-                return ele.sold = (this.productStock[index] == undefined ? 0 : this.productStock[index])
+            this.manualOrder.product.forEach((element: any, key: any) => {
+                if (element.product_vaient_id == data.product_varient_id) {
+                    this.manualOrder.product[key].sold = (this.productStock[index] == undefined ? 0 : this.productStock[index])
+                }
             });
         }
         this.manualOrder.product;
     }
 
     saveOrder() {
+        let customAPIURL ='';
+        if (this.hostname == 'localhost') {
+            customAPIURL = "http://localhost:5001/addManualOrder";
+        } else {
+            customAPIURL = "http://3.23.29.252:5001/addManualOrder";
+        }
 
-        let customAPIURL = "http://3.23.29.252:5001/addManualOrder";
-
+        this.manualOrder.shippingData = this.shippingCarrierModal;
+        debugger;
+       
+        let data = this.manualOrder;
         const body = { "data": this.manualOrder };
         const headers = new HttpHeaders()
             .set('accept', '*/*')
@@ -377,5 +389,56 @@ fragment order on Order {
                 window.location.href = `${this.url}/admin/extensions/orderSummary`;
             });
 
+    }
+
+    fetchCity(){
+        let shippingID = this.shippingCarrierModal.shipping;
+        if(shippingID == "1"){
+            let customAPIURL ='';
+            if (this.hostname == 'localhost') {
+                customAPIURL = "http://localhost:5001/fetchAramxCity";
+            } else {
+                customAPIURL = "http://3.23.29.252:5001/fetchAramxCity";
+            }
+        
+        return this.http
+            .get(customAPIURL)
+            .subscribe((resp: any) => {
+                this.shippingCitites = '';
+                this.shippingCitites = resp.data;
+            });
+        } else if(shippingID == 2){
+            let customAPIURL ='';
+            if (this.hostname == 'localhost') {
+                customAPIURL = "http://localhost:5001/fetchxturboCity";
+            } else {
+                customAPIURL = "http://3.23.29.252:5001/fetchxturboCity";
+            }
+        
+        return this.http
+            .get(customAPIURL)
+            .subscribe((resp: any) => {
+                this.shippingCitites = '';
+                this.shippingCitites = resp.data;
+            });
+        }else if(shippingID == 3){
+            let customAPIURL ='';
+            if (this.hostname == 'localhost') {
+                customAPIURL = "http://localhost:5001/fetchfastloCity";
+            } else {
+                customAPIURL = "http://3.23.29.252:5001/fetchfastloCity";
+            }
+        
+        return this.http
+            .get(customAPIURL)
+            .subscribe((resp: any) => {
+                this.shippingCitites = '';
+                this.shippingCitites = resp.data;
+            });
+        }
+    }
+
+    changeCityModel(){
+       this.manualOrder.city = this.shippingCarrierModal.city;
     }
 }

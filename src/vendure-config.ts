@@ -41,11 +41,11 @@ export const config: VendureConfig = {
         type: 'mysql',
         synchronize: false, // turn this off for production
         logging: false,
-        database: 'stock',
+        database: 'vendure-app',
         host: 'localhost',
         port: 3306,
         username: 'root',
-        password: '@stock!@#$%'
+        password: ''
         // migrations: [path.join(__dirname, '../migrations/*.ts')],
     },
     paymentOptions: {
@@ -118,7 +118,7 @@ export const config: VendureConfig = {
                             },
                         ],
                     }],
-                    devMode: false,
+                    devMode: true,
                 },
 
             ),

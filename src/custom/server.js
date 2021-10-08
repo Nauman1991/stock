@@ -2,27 +2,32 @@ const express = require('express')
 const bodyParser = require("body-parser");
 const cors = require("cors");
 var mysql = require('mysql');
+const axios = require("axios");
 const app = express()
 const port = 5001
+var os = require("os");
+var hostname = os.hostname();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
-// var con = mysql.createConnection({
-//     host: "localhost",
-//     user: "root",
-//     password: "",
-//     database: "vendure-app"
-// });
-
-var con = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "@stock!@#$%",
-    database: "stock"
-});
+if (hostname == '192.168.0.107') {
+    var con = mysql.createConnection({
+        host: "localhost",
+        user: "root",
+        password: "",
+        database: "vendure-app"
+    });
+} else {
+    var con = mysql.createConnection({
+        host: "localhost",
+        user: "root",
+        password: "@stock!@#$%",
+        database: "stock"
+    });
+}
 
 con.connect(function(err) {
     if (err) throw err;
@@ -33,6 +38,111 @@ app.get('/', (req, res) => {
     console.log("Hello World!");
     res.send('Hello World!')
 })
+
+app.get('/fetchAramxCity', (req, res) => {
+    var runner = require("child_process");
+    var phpScriptPath = "./php-script/index.php";
+    runner.exec("php " + phpScriptPath, function(err, phpResponse, stderr) {
+        if (err) console.log(err); /* log error */
+        let arr = phpResponse.split(',');
+        let resp = {
+            code: 200,
+            status: true,
+            data: arr
+        };
+        res.json(resp);
+    });
+})
+
+app.get('/fetchfastloCity', (req, res) => {
+    let url = "https://fastlo.com/api/v1/pickup_cities";
+    axios
+        .post(url, {
+            request: {
+                "country": "SA"
+            }
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+                "fastlo-api-key": "09dbe91e06d3f93ad1fe0456d35acb7fs6p237lb47qlla4idovgu36srabfrlz9"
+            }
+        })
+        .then((response) => {
+
+            let resp = {
+                code: 200,
+                status: true,
+                data: response.data.output.cities_en
+            };
+            res.json(resp);
+        })
+        .catch((error) => {
+            console.log(error);
+        });
+})
+
+app.get('/fetchxturboCity', (req, res) => {
+
+
+    var axios = require('axios');
+    var data = JSON.stringify({
+        "email": "Liou@gmail.com",
+        "password": "123456"
+    });
+
+    var config = {
+        method: 'post',
+        url: 'http://testing.xturbox.com/api/v1/client/login',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: data
+    };
+
+    axios(config)
+        .then(function(response) {
+            let resp = response.data;
+            let token = resp.token;
+            return fetchXturboCityAPI(token, res);
+        })
+        .catch(function(error) {
+            console.log(error);
+        });
+
+
+})
+
+function fetchXturboCityAPI(token, res) {
+    var axios = require('axios');
+    var configCity = {
+        method: 'get',
+        url: 'http://testing.xturbox.com/api/v1/client/cities',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept-Language': 'en',
+            'Authorization': `Bearer ${token}`
+        }
+    };
+
+    axios(configCity)
+        .then(function(r) {
+
+            let arr = [];
+            r.data.forEach(element => {
+                arr.push(element.name_ar)
+            });
+            console.log(arr);
+            let resp = {
+                code: 200,
+                status: true,
+                data: arr
+            };
+            res.json(resp);
+        })
+        .catch(function(error) {
+            console.log(error);
+        });
+}
 
 app.post('/addManualOrder', (req, res) => {
 
@@ -148,6 +258,10 @@ function insertOrder(data, customerID, res, customerData) {
         let orderChannelQuery = `INSERT INTO order_channels_channel (orderId,channelId) VALUES ("${orderID}" , 1)`
         con.query(orderChannelQuery, function(err, orderChannelResult) { if (err) throw err; });
 
+        //Insert Data into shipping-custom table
+        let shippingData = data.shippingData;
+        let shippingCustomQuery = `INSERT INTO shipping_custom (order_id,company,city,street,description) VALUES ("${orderID}","${shippingData.shipping}","${shippingData.city}","${shippingData.street}","${shippingData.address_complement}")`;
+        con.query(shippingCustomQuery, function(err, shippingCustomResult) { if (err) throw err; });
 
         //5.5 Add Item into Order Item Table
         data.product.forEach((element, key) => {
@@ -180,12 +294,13 @@ function insertOrder(data, customerID, res, customerData) {
             let stockQuery = `SELECT stockAllocated,stockOnHand from product_variant where id = ${product_vaient_id}`;
             con.query(stockQuery, function(err, stockResult) {
                 let r = JSON.parse(JSON.stringify(stockResult[0]));
+
                 let previousStockAllocation = r.stockAllocated;
                 let previousStockOnHand = r.stockOnHand;
                 let stockAllocation = element.sold;
                 let newStockAllocation = parseInt(previousStockAllocation) + parseInt(stockAllocation);
                 let newStockOnHand = parseInt(previousStockOnHand) - parseInt(stockAllocation);
-                let updateStockQuery = `UPDATE product_variant set stockAllocated = ${newStockAllocation} , stockOnHand = ${newStockOnHand} where id = 1`;
+                let updateStockQuery = `UPDATE product_variant set stockAllocated = ${newStockAllocation} , stockOnHand = ${newStockOnHand} where id = ${product_vaient_id}`;
 
                 con.query(updateStockQuery, function(err, updateStockResult) {
                     if (err) throw err;
