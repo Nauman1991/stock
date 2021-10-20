@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { OrderListCustomModule } from './extensions/8a7a14c0c2154e3794205124bde954b3d67146667cce7c3f4f1307c28fba83b2/order-list-custom.module';
+import { OrderListCustomModule } from './extensions/d726e2bbfc91d7f68dcdc73b04ae7668d055c75559ae9dfc834196ac8b213ef6/order-list-custom.module';
 
 
 @NgModule({

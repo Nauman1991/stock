@@ -1,16 +1,20 @@
 export const extensionRoutes = [  {
     path: 'extensions/greet',
-    loadChildren: () => import('./extensions/8a7a14c0c2154e3794205124bde954b3d67146667cce7c3f4f1307c28fba83b2/greeting.module').then(m => m.GreeterModule),
+    loadChildren: () => import('./extensions/d726e2bbfc91d7f68dcdc73b04ae7668d055c75559ae9dfc834196ac8b213ef6/greeting.module').then(m => m.GreeterModule),
   },
   {
     path: 'extensions/addManualOrder',
-    loadChildren: () => import('./extensions/8a7a14c0c2154e3794205124bde954b3d67146667cce7c3f4f1307c28fba83b2/add-manual-order.module').then(m => m.AddManualOrderModule),
+    loadChildren: () => import('./extensions/d726e2bbfc91d7f68dcdc73b04ae7668d055c75559ae9dfc834196ac8b213ef6/add-manual-order.module').then(m => m.AddManualOrderModule),
   },
   {
     path: 'extensions/orderSummary',
-    loadChildren: () => import('./extensions/8a7a14c0c2154e3794205124bde954b3d67146667cce7c3f4f1307c28fba83b2/order-summary.module').then(m => m.OrderSummaryModule),
+    loadChildren: () => import('./extensions/d726e2bbfc91d7f68dcdc73b04ae7668d055c75559ae9dfc834196ac8b213ef6/order-summary.module').then(m => m.OrderSummaryModule),
   },
   {
     path: 'extensions/orderView',
-    loadChildren: () => import('./extensions/8a7a14c0c2154e3794205124bde954b3d67146667cce7c3f4f1307c28fba83b2/order-view.module').then(m => m.OrderViewModule),
+    loadChildren: () => import('./extensions/d726e2bbfc91d7f68dcdc73b04ae7668d055c75559ae9dfc834196ac8b213ef6/order-view.module').then(m => m.OrderViewModule),
+  },
+  {
+    path: 'extensions/stockCustomView',
+    loadChildren: () => import('./extensions/d726e2bbfc91d7f68dcdc73b04ae7668d055c75559ae9dfc834196ac8b213ef6/stock-custom-view.module').then(m => m.StockCustomViewModule),
   }];

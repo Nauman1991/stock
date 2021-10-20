@@ -1,0 +1,34 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Assets</th>
+            <th scope="col">SKU</th>
+            <th scope="col">Product Category</th>
+            <th scope="col">Product</th>
+            <th scope="col">Stock On Hand</th>
+            <th scope="col">Stock Allocated</th>
+            <th scope="col">Price</th>
+            <th scope="col">Created At</th>
+            <th scope="col">Updated At</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let stock of stock;let i = index">
+            <td>
+                <div class="asset-thumb featured">
+                    <img src="{{this.imageURL}}/{{stock.imagePreview}}?preset=tiny" alt="">
+                </div>
+            </td>
+            <td>{{stock.sku}}</td>
+            <td>{{stock.productName}}</td>
+            <td>{{stock.productVarientName}}</td>
+            <td>{{stock.stockOnHand}}</td>
+            <td>{{stock.stockAllocated}}</td>
+            <td *ngIf="stock.totalOrderCount == 1">{{stock.productVarientPrice.toFixed(2)}}</td>
+            <td *ngIf="stock.totalOrderCount <= 0 || stock.totalOrderCount > 1">{{(stock.productVarientPrice / 100).toFixed(2)}}</td>
+            <td>{{ stock.createdAt | date }}</td>
+            <td>{{ stock.updatedAt | date }}</td>
+        </tr>
+
+    </tbody>
+</table>

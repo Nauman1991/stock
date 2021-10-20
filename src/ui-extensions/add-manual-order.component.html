@@ -139,7 +139,10 @@
     </div>
     <div class="modal-body">
         <div class="floating-label product-div" *ngFor="let product of products;let i = index">
-            <div class="product_price">${{product.product_varient_price}}</div>
+
+            <div class="product_price" *ngIf="product.order_count == 1">${{product.product_varient_price}}</div>
+            <div class="product_price" *ngIf="product.order_count <= 0 || product.order_count > 1">${{product.product_varient_price / 100}}</div>
+
             <input type="checkbox" name="products" [value]="product.product_varient_id" (change)="productSelect(product,$event.target.checked,i)" />
             <img [src]="product.product_varient_image_source" alt="" class="img-fluid product-image"> <span class="product_name">{{product.product_varient_name}}</span>
             <div class="product_stock">{{product.product_varient_stock_on_hand}} <input type="text" class="product_stock_input" (input)="changeProductStock(product,i)" [(ngModel)]="productStock[i]"></div>

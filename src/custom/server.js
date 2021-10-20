@@ -12,13 +12,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
-
-if (hostname == '192.168.0.107') {
+console.log(hostname);
+if (hostname == '192.168.0.107' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
     var con = mysql.createConnection({
         host: "localhost",
         user: "root",
         password: "",
-        database: "vendure-app"
+        database: "stock"
     });
 } else {
     var con = mysql.createConnection({
@@ -248,14 +248,14 @@ function insertOrder(data, customerID, res, customerData) {
     })
 
     //5.3 Create Order Item And Get Order ID
-    let insertOrderQuery = "INSERT INTO `order` (code,state,active,currencyCode,subTotal,subTotalWithTax,taxZoneId,customerId,couponCodes,shippingAddress,billingAddress) VALUES (" + "'" + orderCode + "'" + ", " + "'" + state + "'" + " , 1 , 'USD' ," + orderTotalPrice + " ," + orderTotalPrice + ",0," + customerID + " ,0,'{}','{}')";
+    let insertOrderQuery = "INSERT INTO `order` (code,state,active,currencyCode,subTotal,subTotalWithTax,taxZoneId,customerId,couponCodes,shippingAddress,billingAddress,customState) VALUES (" + "'" + orderCode + "'" + ", " + "'" + state + "'" + " , 1 , 'USD' ," + orderTotalPrice + " ," + orderTotalPrice + ",0," + customerID + " ,0,'{}','{}','Shipped')";
 
     con.query(insertOrderQuery, function(err, orderResult) {
         if (err) throw err;
         let orderID = orderResult.insertId;
 
         //5.4 Insert Data into customer_channels_channel
-        let orderChannelQuery = `INSERT INTO order_channels_channel (orderId,channelId) VALUES ("${orderID}" , 1)`
+        let orderChannelQuery = `INSERT INTO order_channels_channel (orderId,channelId) VALUES ("${orderID}" , "${data.userChannel}")`
         con.query(orderChannelQuery, function(err, orderChannelResult) { if (err) throw err; });
 
         //Insert Data into shipping-custom table

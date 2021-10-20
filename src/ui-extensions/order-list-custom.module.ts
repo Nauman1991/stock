@@ -29,11 +29,17 @@ import $ from 'jquery';
         addNavMenuSection({
             id: 'order-view',
             label: 'My Extensions',
-            items: [{
+            items: [
+            {
               id: 'order-view',
               label: 'My Orders',
               routerLink: ['/extensions/orderView'],
-              // Icon can be any of https://clarity.design/icons
+              icon: 'cursor-hand-open',
+            },
+            {
+                id: 'stock-view',
+              label: 'Stock',
+              routerLink: ['/extensions/stockCustomView'],
               icon: 'cursor-hand-open',
             }],
           },

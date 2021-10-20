@@ -22,14 +22,14 @@ export const config: VendureConfig = {
                 'request.credentials': 'include',
             } as any,
         },// turn this off for production
-        adminApiDebug: true, // turn this off for production
+        adminApiDebug: false, // turn this off for production
         shopApiPath: 'shop-api',
         shopApiPlayground: {
             settings: {
                 'request.credentials': 'include',
             } as any,
         },// turn this off for production
-        shopApiDebug: true,// turn this off for production
+        shopApiDebug: false,// turn this off for production
     },
     authOptions: {
         superadminCredentials: {
@@ -41,7 +41,7 @@ export const config: VendureConfig = {
         type: 'mysql',
         synchronize: false, // turn this off for production
         logging: false,
-        database: 'vendure-app',
+        database: 'stock',
         host: 'localhost',
         port: 3306,
         username: 'root',
@@ -115,6 +115,12 @@ export const config: VendureConfig = {
                                 route: 'orderView',
                                 ngModuleFileName: 'order-view.module.ts',
                                 ngModuleName: 'OrderViewModule',
+                            },
+                            {
+                                type: 'lazy',
+                                route: 'stockCustomView',
+                                ngModuleFileName: 'stock-custom-view.module.ts',
+                                ngModuleName: 'StockCustomViewModule',
                             },
                         ],
                     }],

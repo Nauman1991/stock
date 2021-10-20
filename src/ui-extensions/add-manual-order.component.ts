@@ -38,8 +38,9 @@ export class AddManualOrderComponent implements OnInit {
     productStock: any = [];
     modalRef?: BsModalRef;
     url: string = '';
-    hostname:string = '' ;
-    shippingCitites = '' ;
+    hostname: string = '';
+    shippingCitites = '';
+    userChannel: string = '';
     public querySubscription: Subscription;
 
     customerWebsite = [
@@ -95,6 +96,7 @@ export class AddManualOrderComponent implements OnInit {
         private http: HttpClient,
         private router: Router) {
         this.fetchCountries();
+        this.fetchOrderChannel();
     }
 
     ngOnInit() {
@@ -113,6 +115,31 @@ export class AddManualOrderComponent implements OnInit {
         } else {
             this.url = "http://3.23.29.252:4200";
         }
+    }
+
+
+    fetchOrderChannel() {
+        const GET_CURRENT_USER = gql`
+      query me {
+        me {
+            id
+            identifier
+            channels {
+                id
+                token
+                code
+            }
+        }
+    }
+      `;
+
+        this.querySubscription = this.apollo.watchQuery<any>({
+            query: GET_CURRENT_USER,
+
+        }).valueChanges
+            .subscribe(({ data, loading }) => {
+                this.userChannel = data.me.channels[0].id;
+            });
     }
 
     fetchCountries() {
@@ -137,6 +164,8 @@ export class AddManualOrderComponent implements OnInit {
     }
 
     selectProduct(template: TemplateRef<any>) {
+
+
         const GET_PRODUCTS = gql`{
             products(options:{}){
                 items{
@@ -166,29 +195,44 @@ export class AddManualOrderComponent implements OnInit {
             .subscribe(({ data, loading }) => {
 
                 let resp = data.products.items;
+                this.products = [];
                 resp.forEach(element => {
                     let productVaient = element.variants;
+
                     productVaient.forEach(e => {
                         let imgSource = e.assets.length > 0 ? e.assets[0].source : 'http://localhost:4200/assets/source/no-image.jpeg';
+                        this.hostname = window.location.hostname;
+                        let customAPIPATH = "";
+                        if (this.hostname == 'localhost') {
+                            customAPIPATH = "http://localhost:5001";
+                        } else {
+                            customAPIPATH = "http://3.23.29.252:5001";
+                        }
 
-                        this.products.push({
-                            productID: element.id,
-                            product_varient_id: e.id,
-                            product_varient_name: e.name,
-                            product_varient_price: e.price,
-                            product_varient_stock_level: e.stockLevel,
-                            product_varient_enabled: e.enabled,
-                            product_varient_stock_on_hand: e.stockOnHand,
-                            product_varient_stock_allocated: e.stockAllocated,
-                            product_varient_image_source: imgSource
-                        });
+                        let customAPIURL = `${customAPIPATH}/orders/getOrderCountVariant/${e.id}/${this.userChannel}`;
+                        return this.http
+                            .get(customAPIURL)
+                            .subscribe((resp: any) => {
+                                let orderCount = resp.data.orderCount;
+                                this.products.push({
+                                    productID: element.id,
+                                    product_varient_id: e.id,
+                                    product_varient_name: e.name,
+                                    product_varient_price: e.price,
+                                    product_varient_stock_level: e.stockLevel,
+                                    product_varient_enabled: e.enabled,
+                                    product_varient_stock_on_hand: e.stockOnHand,
+                                    product_varient_stock_allocated: e.stockAllocated,
+                                    product_varient_image_source: imgSource,
+                                    order_count : orderCount
+                                });
+                                    
+                                
+                            });
                     });
 
                 });
-
                 this.modalService.open(template, { windowClass: 'shippingModal' });
-                // this.products 
-                // debugger;
             });
     }
 
@@ -331,6 +375,7 @@ fragment order on Order {
     }
 
     productSelect(data: any, checked: any, index: any) {
+
         /**Ned to push item to array if checked is true otherwise need to remove it */
         if (checked) {
             if (this.manualOrder.product.length > 0) {
@@ -338,14 +383,24 @@ fragment order on Order {
                     return ele.product_vaient_id != data.product_varient_id
                 });
             }
+          
+            let orderPrice = 0 ;
+            if(data.order_count == 1){
+                orderPrice = data.product_varient_price;
+            }else if(data.order_count <= 1 || data.order_count >= 1){
+                orderPrice = data.product_varient_price / 100;
+            }else{
+                orderPrice = data.product_varient_price;
+            }
 
             this.manualOrder.product.push({
                 'product_id': data.productID,
                 "product_vaient_id": data.product_varient_id,
                 "name": data.product_varient_name,
                 "sold": (this.productStock[index] == undefined ? 0 : this.productStock[index]),
-                "price": data.product_varient_price
+                "price": orderPrice
             });
+
         } else {
             this.manualOrder.product = this.manualOrder.product.filter((ele: any) => {
                 return ele.product_vaient_id != data.product_varient_id
@@ -365,7 +420,7 @@ fragment order on Order {
     }
 
     saveOrder() {
-        let customAPIURL ='';
+        let customAPIURL = '';
         if (this.hostname == 'localhost') {
             customAPIURL = "http://localhost:5001/addManualOrder";
         } else {
@@ -373,8 +428,8 @@ fragment order on Order {
         }
 
         this.manualOrder.shippingData = this.shippingCarrierModal;
-        debugger;
-       
+        this.manualOrder.userChannel = this.userChannel;
+
         let data = this.manualOrder;
         const body = { "data": this.manualOrder };
         const headers = new HttpHeaders()
@@ -391,54 +446,54 @@ fragment order on Order {
 
     }
 
-    fetchCity(){
+    fetchCity() {
         let shippingID = this.shippingCarrierModal.shipping;
-        if(shippingID == "1"){
-            let customAPIURL ='';
+        if (shippingID == "1") {
+            let customAPIURL = '';
             if (this.hostname == 'localhost') {
                 customAPIURL = "http://localhost:5001/fetchAramxCity";
             } else {
                 customAPIURL = "http://3.23.29.252:5001/fetchAramxCity";
             }
-        
-        return this.http
-            .get(customAPIURL)
-            .subscribe((resp: any) => {
-                this.shippingCitites = '';
-                this.shippingCitites = resp.data;
-            });
-        } else if(shippingID == 2){
-            let customAPIURL ='';
+
+            return this.http
+                .get(customAPIURL)
+                .subscribe((resp: any) => {
+                    this.shippingCitites = '';
+                    this.shippingCitites = resp.data;
+                });
+        } else if (shippingID == 2) {
+            let customAPIURL = '';
             if (this.hostname == 'localhost') {
                 customAPIURL = "http://localhost:5001/fetchxturboCity";
             } else {
                 customAPIURL = "http://3.23.29.252:5001/fetchxturboCity";
             }
-        
-        return this.http
-            .get(customAPIURL)
-            .subscribe((resp: any) => {
-                this.shippingCitites = '';
-                this.shippingCitites = resp.data;
-            });
-        }else if(shippingID == 3){
-            let customAPIURL ='';
+
+            return this.http
+                .get(customAPIURL)
+                .subscribe((resp: any) => {
+                    this.shippingCitites = '';
+                    this.shippingCitites = resp.data;
+                });
+        } else if (shippingID == 3) {
+            let customAPIURL = '';
             if (this.hostname == 'localhost') {
                 customAPIURL = "http://localhost:5001/fetchfastloCity";
             } else {
                 customAPIURL = "http://3.23.29.252:5001/fetchfastloCity";
             }
-        
-        return this.http
-            .get(customAPIURL)
-            .subscribe((resp: any) => {
-                this.shippingCitites = '';
-                this.shippingCitites = resp.data;
-            });
+
+            return this.http
+                .get(customAPIURL)
+                .subscribe((resp: any) => {
+                    this.shippingCitites = '';
+                    this.shippingCitites = resp.data;
+                });
         }
     }
 
-    changeCityModel(){
-       this.manualOrder.city = this.shippingCarrierModal.city;
+    changeCityModel() {
+        this.manualOrder.city = this.shippingCarrierModal.city;
     }
 }

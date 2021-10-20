@@ -70,8 +70,9 @@ export class OrderSummaryComponent implements OnInit {
     }
 
     calculateAmount(product: any) {
+        // debugger;
         product.forEach(element => {
-            this.orderTotal += parseInt(element.price);
+            this.orderTotal += parseFloat(element.price);
         });
     }
 
@@ -82,6 +83,8 @@ export class OrderSummaryComponent implements OnInit {
             pageName : this.addtionalInfo.pageName,
             sellerName : this.addtionalInfo.sellerName,
             paymentType : this.addtionalInfo.paymentType,
+            conversationLink : this.addtionalInfo.conversationLink,
+            notes : this.addtionalInfo.notes,
         }
 
         let customAPIURL = `${this.apiURL}/orders/updateOrder`
@@ -95,7 +98,7 @@ export class OrderSummaryComponent implements OnInit {
             .post(customAPIURL, body, { headers: headers })
             .subscribe((resp: any) => {
                if(resp.code == 200){
-                window.location.href = `${this.url}/admin/orders?filter=custom&page=1`;
+                window.location.href = `${this.url}/admin/extensions/orderView`;
                }
             });
     }
