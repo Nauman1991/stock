@@ -24,7 +24,7 @@ if (hostname == '192.168.0.107' || hostname == '192.168.10.9' || hostname == 'na
 router.get('/fetchOrders/:userChannel', (req, res) => {
     let userChannel = req.params.userChannel;
 
-    let orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` where occ.channelId = " + userChannel + " order by o.id DESC";
+    let orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId,sc.`company`,case when sc.`company`='1' then 'Aramex' when sc.`company`='2' then 'XTurbo' when sc.`company`='3' then 'Fastlo' when sc.`company`='4' then 'Custom' else '-' end as carrierName from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where occ.channelId = " + userChannel + " order by o.id DESC";
     con.query(orderQuery, function(err, result) {
         if (err) throw err;
 
@@ -179,7 +179,7 @@ router.post('/editCustomOrder', (req, res) => {
         let queryStatus = '';
         let customOrderStatus = '';
 
-        if (orderStatus != 'cancelled' && orderStatus != 'completed') {
+        if (orderStatus != 'cancelled' && orderStatus != 'completed' && orderStatus != 'shipped') {
             queryStatus = 'Modifying';
             customOrderStatus = orderStatus;
         } else {
@@ -344,6 +344,117 @@ router.post('/getSearchOrder', (req, res) => {
 
     // AND cai.`username_website` like '%" + postData.website + "%'
     let orderQuery = "";
+    let queryWhere = false;
+
+    if (postData.trackingNumber || postData.username || postData.phoneNumber) {
+        condition = "AND";
+    } else {
+        condition = "OR";
+    }
+
+
+
+    let trackingNumberCond = "";
+    if (postData.trackingNumber != '') {
+        queryWhere = true;
+        trackingNumberCond = "`code` = '" + postData.trackingNumber + "'"
+    }
+
+    let titleCond = "";
+    if (postData.username != '') {
+        if (queryWhere) {
+            titleCond = "AND `title` = '" + postData.username + "'";
+        } else {
+            queryWhere = true;
+            titleCond = "`title` = '" + postData.username + "'";
+        }
+
+    }
+
+    let phoneCond = "";
+    if (postData.phoneNumber) {
+        if (queryWhere) {
+            phoneCond = "AND c.`phoneNumber` = '" + postData.phoneNumber + "'";
+        } else {
+            queryWhere = true;
+            phoneCond = "c.`phoneNumber` = '" + postData.phoneNumber + "'";
+        }
+    }
+
+
+    let websiteCond = "";
+    if (postData.website) {
+        if (queryWhere) {
+            websiteCond = "AND cai.`website` LIKE '%" + postData.website + "%'";
+        } else {
+            queryWhere = true;
+            websiteCond = "cai.`website` LIKE '%" + postData.website + "%'";
+        }
+
+    }
+
+    let shippingCarrCond = ""
+    if (postData.shippingCarrier) {
+        if (queryWhere) {
+            shippingCarrCond = "AND sc.`company` = '" + postData.shippingCarrier + "'";
+        } else {
+            queryWhere = true;
+            shippingCarrCond = "sc.`company` = '" + postData.shippingCarrier + "'";
+        }
+    }
+
+    let sellerNameCond = ""
+    if (postData.sellerName != '') {
+        if (queryWhere) {
+            sellerNameCond = "AND `customFields` REGEXP '" + sellerNameJSON + "'"
+        } else {
+            queryWhere = true;
+            sellerNameCond = "`customFields` REGEXP '" + sellerNameJSON + "'"
+        }
+    }
+
+
+    let pageNameCond = ""
+    if (postData.pageName != '') {
+        if (queryWhere) {
+            pageNameCond = "AND `customFields` REGEXP '" + pageNameJSON + "'"
+        } else {
+            queryWhere = true;
+            pageNameCond = "`customFields` REGEXP '" + pageNameJSON + "'"
+        }
+    }
+
+    let userChannelCond = ""
+    if (userChannel) {
+        if (queryWhere) {
+            userChannelCond = "AND occ.channelId = " + userChannel + "";
+        } else {
+            queryWhere = true;
+            userChannelCond = "occ.channelId = " + userChannel + "";
+        }
+    }
+
+
+    orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID,sc.`company`,case when sc.`company`='1' then 'Aramex' when sc.`company`='2' then 'XTurbo' when sc.`company`='3' then 'Fastlo' when sc.`company`='4' then 'Custom' else '-' end as carrierName from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where " + trackingNumberCond + " " + titleCond + " " + phoneCond + "  " + websiteCond + "   " + shippingCarrCond + "  " + pageNameCond + " " + sellerNameCond + " " + userChannelCond + " group by o.code order by o.id DESC ";
+
+    // console.log(orderQuery);
+
+    con.query(orderQuery, function(err, result) {
+        if (err) throw err;
+
+        var rows = JSON.parse(JSON.stringify(result));
+        let resp = {
+            code: 200,
+            status: true,
+            data: { rows }
+        };
+        res.json(resp);
+    })
+
+
+    return;
+
+
     if (postData.pageName != '' && postData.sellerName == '') {
         if (postData.trackingNumber || postData.username || postData.phoneNumber) {
             condition = "AND";
@@ -351,7 +462,12 @@ router.post('/getSearchOrder', (req, res) => {
             condition = "OR";
         }
 
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where (`code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' AND sc.`company` = '" + postData.shippingCarrier + "' " + condition + " cai.`website` like '%" + postData.website + "%' AND occ.channelId = " + userChannel + ") AND `customFields` REGEXP '" + pageNameJSON + "' group by o.code order by o.id DESC ";
+        let websiteCond = "";
+        if (postData.website) {
+            websiteCond = condition + "cai.`website` = '%" + postData.website + "%'";
+        }
+
+        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where (`code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' AND sc.`company` = '" + postData.shippingCarrier + "' " + websiteCond + " AND occ.channelId = " + userChannel + ") OR `customFields` REGEXP '" + pageNameJSON + "' group by o.code order by o.id DESC ";
     } else if (postData.sellerName != '' && postData.pageName == '') {
         if (postData.trackingNumber || postData.username || postData.phoneNumber) {
             condition = "AND";
@@ -359,7 +475,17 @@ router.post('/getSearchOrder', (req, res) => {
             condition = "OR";
         }
 
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where (`code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' AND sc.`company` = '" + postData.shippingCarrier + "' " + condition + " cai.`website` like '%" + postData.website + "%' AND occ.channelId = " + userChannel + ")  AND `customFields` RLIKE '" + sellerNameJSON + "' group by o.code order by o.id DESC ";
+        let websiteCond = "";
+        if (postData.website) {
+            websiteCond = condition + "cai.`website` = '%" + postData.website + "%'";
+        }
+
+        let shippingCarrCond = ""
+        if (postData.shippingCarrier) {
+            shippingCarrCond = "OR sc.`company` = '" + postData.shippingCarrier + "'";
+        }
+
+        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where (`code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' AND sc.`company` = '" + postData.shippingCarrier + "' " + websiteCond + " AND occ.channelId = " + userChannel + ")  AND `customFields` REGEXP '" + sellerNameJSON + "' group by o.code order by o.id DESC ";
     } else if (postData.pageName != '' && postData.sellerName != '') {
         if (postData.trackingNumber || postData.username || postData.phoneNumber) {
             condition = "AND";
@@ -367,7 +493,29 @@ router.post('/getSearchOrder', (req, res) => {
             condition = "OR";
         }
 
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where (`code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' AND sc.`company` = '" + postData.shippingCarrier + "' " + condition + " cai.`website` like '%" + postData.website + "%' AND occ.channelId = " + userChannel + ") AND `customFields` REGEXP '" + pageNameJSON + "' AND `customFields` RLIKE '" + sellerNameJSON + "' group by o.code order by o.id DESC ";
+        let websiteCond = "";
+        if (postData.website) {
+            websiteCond = condition + "cai.`website` = '%" + postData.website + "%'";
+        }
+
+        let shippingCarrCond = ""
+        if (postData.shippingCarrier) {
+            shippingCarrCond = "OR sc.`company` = '" + postData.shippingCarrier + "'";
+        }
+
+
+        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where `code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "'  " + websiteCond + " AND occ.channelId = " + userChannel + " " + condition + " " + shippingCarrCond + "  `customFields` REGEXP '" + pageNameJSON + "' AND `customFields` RLIKE '" + sellerNameJSON + "' group by o.code order by o.id DESC ";
+    } else if (postData.shippingCarrier) {
+        let condition = ""
+
+        if (postData.trackingNumber || postData.username || postData.phoneNumber) {
+            condition = "AND";
+        } else {
+            condition = "OR";
+        }
+
+
+        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where `code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' OR sc.`company` = '" + postData.shippingCarrier + "' AND occ.channelId = " + userChannel + "  group by o.id order by o.id DESC ";
     } else {
 
         let condition = ""
@@ -378,7 +526,13 @@ router.post('/getSearchOrder', (req, res) => {
             condition = "OR";
         }
 
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where `code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' AND sc.`company` = '" + postData.shippingCarrier + "' " + condition + " cai.`website` like '%" + postData.website + "%' AND occ.channelId = " + userChannel + "  group by o.id order by o.id DESC ";
+
+        let websiteCond = "";
+        if (postData.website) {
+            websiteCond = condition + "cai.`website` = '%" + postData.website + "%'";
+        }
+
+        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where `code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' AND sc.`company` = '" + postData.shippingCarrier + "' " + websiteCond + " AND occ.channelId = " + userChannel + "  group by o.id order by o.id DESC ";
     }
 
 

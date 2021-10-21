@@ -229,7 +229,7 @@ function insertOrder(data, customerID, res, customerData) {
     //5.1 Get Latest Product Varient Price
     let orderCode = require("crypto").randomBytes(7).toString('hex');
     let active = 1;
-    let state = 'Adding Items';
+    let state = 'Modifying';
     let responseBack = [];
     let productData = [];
 
