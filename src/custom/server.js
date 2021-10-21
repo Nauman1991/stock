@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 console.log(hostname);
-if (hostname == '192.168.0.107' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
+if (hostname == '192.168.0.107' || hostname == '192.168.10.9' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
     var con = mysql.createConnection({
         host: "localhost",
         user: "root",
@@ -86,13 +86,13 @@ app.get('/fetchxturboCity', (req, res) => {
 
     var axios = require('axios');
     var data = JSON.stringify({
-        "email": "Liou@gmail.com",
+        "email": "apiUserStock1@gmail.com",
         "password": "123456"
     });
 
     var config = {
         method: 'post',
-        url: 'http://testing.xturbox.com/api/v1/client/login',
+        url: 'https://portal.xturbox.com/api/v1/client/login',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -103,6 +103,7 @@ app.get('/fetchxturboCity', (req, res) => {
         .then(function(response) {
             let resp = response.data;
             let token = resp.token;
+            console.log(token);
             return fetchXturboCityAPI(token, res);
         })
         .catch(function(error) {
@@ -116,7 +117,7 @@ function fetchXturboCityAPI(token, res) {
     var axios = require('axios');
     var configCity = {
         method: 'get',
-        url: 'http://testing.xturbox.com/api/v1/client/cities',
+        url: 'https://portal.xturbox.com/api/v1/client/cities',
         headers: {
             'Content-Type': 'application/json',
             'Accept-Language': 'en',
@@ -228,7 +229,7 @@ function insertOrder(data, customerID, res, customerData) {
     //5.1 Get Latest Product Varient Price
     let orderCode = require("crypto").randomBytes(7).toString('hex');
     let active = 1;
-    let state = 'Shipped';
+    let state = 'Adding Items';
     let responseBack = [];
     let productData = [];
 
@@ -248,7 +249,7 @@ function insertOrder(data, customerID, res, customerData) {
     })
 
     //5.3 Create Order Item And Get Order ID
-    let insertOrderQuery = "INSERT INTO `order` (code,state,active,currencyCode,subTotal,subTotalWithTax,taxZoneId,customerId,couponCodes,shippingAddress,billingAddress,customState) VALUES (" + "'" + orderCode + "'" + ", " + "'" + state + "'" + " , 1 , 'USD' ," + orderTotalPrice + " ," + orderTotalPrice + ",0," + customerID + " ,0,'{}','{}','Shipped')";
+    let insertOrderQuery = "INSERT INTO `order` (code,state,active,currencyCode,subTotal,subTotalWithTax,taxZoneId,customerId,couponCodes,shippingAddress,billingAddress,customState) VALUES (" + "'" + orderCode + "'" + ", " + "'" + state + "'" + " , 1 , 'USD' ," + orderTotalPrice + " ," + orderTotalPrice + ",0," + customerID + " ,0,'{}','{}','Register')";
 
     con.query(insertOrderQuery, function(err, orderResult) {
         if (err) throw err;

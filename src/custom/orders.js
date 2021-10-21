@@ -5,7 +5,7 @@ var os = require("os");
 var hostname = os.hostname();
 
 
-if (hostname == '192.168.0.107' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
+if (hostname == '192.168.0.107' || hostname == '192.168.10.9' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
     var con = mysql.createConnection({
         host: "localhost",
         user: "root",
@@ -344,7 +344,7 @@ router.post('/getSearchOrder', (req, res) => {
 
     // AND cai.`username_website` like '%" + postData.website + "%'
     let orderQuery = "";
-    if (postData.pageName != '') {
+    if (postData.pageName != '' && postData.sellerName == '') {
         if (postData.trackingNumber || postData.username || postData.phoneNumber) {
             condition = "AND";
         } else {
@@ -352,7 +352,7 @@ router.post('/getSearchOrder', (req, res) => {
         }
 
         orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where (`code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' AND sc.`company` = '" + postData.shippingCarrier + "' " + condition + " cai.`website` like '%" + postData.website + "%' AND occ.channelId = " + userChannel + ") AND `customFields` REGEXP '" + pageNameJSON + "' group by o.code order by o.id DESC ";
-    } else if (postData.sellerName != '') {
+    } else if (postData.sellerName != '' && postData.pageName == '') {
         if (postData.trackingNumber || postData.username || postData.phoneNumber) {
             condition = "AND";
         } else {
