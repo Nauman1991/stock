@@ -26,10 +26,13 @@ export class OrderViewComponent implements OnInit {
   _orderDetailProduct: any = [];
   productStock: any = [];
   _orderUpdate: any = [];
+  _totalAmount:any='';
+  _totalShippingAmount:any='';
 
   products: any = [];
   _searchOrder: any = {};
   userChannel: string = '';
+  userIdentifier: string = '';
 
   customerWebsite = [
     {
@@ -120,7 +123,12 @@ export class OrderViewComponent implements OnInit {
 
     }).valueChanges
       .subscribe(({ data, loading }) => {
-        this.userChannel = data.me.channels[0].id;
+        let channelID :any = [] ;
+        data.me.channels.forEach((element:any) => {
+            channelID.push(element.id);
+        });
+        this.userChannel = channelID.join(',');
+        
       });
   }
 
@@ -146,6 +154,8 @@ export class OrderViewComponent implements OnInit {
           this.orders[key].sellerName = (customFields) ? customFields[0].sellerName : '';
           this.orders[key].conversationLink = (customFields) ? customFields[0].conversationLink : '';
           this.orders[key].notes = (customFields) ? customFields[0].notes : '';
+          this.orders[key].shippingAmount = (customFields) ? customFields[0].shippingAmount : '';
+          this.orders[key].trackingLink = (customFields) ? customFields[0].trackingLink : '';
           // }
 
         });
@@ -385,6 +395,7 @@ export class OrderViewComponent implements OnInit {
         let arr: any = [];
         let product: any = [];
         this._orderDetailProduct = [];
+        this._totalAmount = 0 ;
 
         let orderFind = this.orders.find(function (value, index) {
           if (value.id === orderID) {
@@ -398,6 +409,7 @@ export class OrderViewComponent implements OnInit {
 
         product.forEach((element: any, key: any) => {
           element.lines.forEach((ele: any, key2: any) => {
+            this._totalAmount += ele.proratedUnitPrice * ele.items.length ;
             this._orderDetailProduct.push({
               previousQuantity: ele.items.length,
               price: ele.proratedUnitPrice / ele.items.length,
@@ -407,9 +419,13 @@ export class OrderViewComponent implements OnInit {
             })
           });
         });
-
+        this._totalAmount;
+       
         this._orderDetail.customer = arr[0];
         this._orderDetail.detail = data.order;
+        this._totalShippingAmount = (orderFind.shippingAmount) ? parseFloat(orderFind.shippingAmount) : 0;
+        this._totalAmount = parseFloat(this._totalAmount);
+        
         this.modalService.open(template, { windowClass: 'shippingModal', size: 'lg' });
       });
 

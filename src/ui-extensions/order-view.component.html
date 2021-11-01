@@ -171,6 +171,18 @@
                                 <td><input style="width: 22%;" type="text" name="quantity_{{i}}" [(ngModel)]="_orderDetailProduct[i].quantity" [ngModelOptions]="{standalone: true}"></td>
                                 <td>{{_orderDetailProduct[i].price * _orderDetailProduct[i].quantity}}</td>
                             </tr>
+                            <tr>
+                                <td colspan="5"><strong>Amount</strong></td>
+                                <td>{{_totalAmount.toFixed(2)}}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5"><strong>Shipping Amount</strong></td>
+                                <td>{{_totalShippingAmount.toFixed(2)}}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5"><strong>Total Amount</strong></td>
+                                <td>{{(_totalShippingAmount + _totalAmount).toFixed(2)}}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -187,6 +199,10 @@
                             <div class="form-group">
                                 <label for="exampleInputEmail3">Surname</label> <br>
                                 <input type="email" class="form-control" id="exampleInputEmail3" placeholder="Last Name" [(ngModel)]="_orderDetail.customer.lastName" [ngModelOptions]="{standalone: true}">
+                            </div>
+                            <div class="form-group">
+                                <label for="shippingAmount">Shipping Amount</label> <br>
+                                <input type="email" class="form-control" id="shippingAmount" placeholder="Shipping Amount" [(ngModel)]="_orderDetail.customer.shippingAmount" [ngModelOptions]="{standalone: true}">
                             </div>
                             <div class="form-group">
                                 <label for="exampleInputEmail3">Phone Number</label> <br>
@@ -253,12 +269,17 @@
                             </div>
                             <div class="form-group">
                                 <label for="exampleInputEmail3Conversation">Conversation Link</label> <br>
-                                <textarea name="" id="exampleInputEmail3Conversation" cols="80" rows="5" [(ngModel)]="_orderDetail.customer.conversationLink"></textarea>
+                                <textarea name="" id="exampleInputEmail3Conversation" cols="80" rows="5" [(ngModel)]="_orderDetail.customer.conversationLink" [ngModelOptions]="{standalone: true}"></textarea>
                             </div>
 
                             <div class="form-group">
                                 <label for="exampleInputEmail3Notes">Notes</label> <br>
-                                <textarea name="" id="exampleInputEmail3Notes" cols="80" rows="5" [(ngModel)]="_orderDetail.customer.notes"></textarea>
+                                <textarea name="" id="exampleInputEmail3Notes" cols="80" rows="5" [(ngModel)]="_orderDetail.customer.notes" [ngModelOptions]="{standalone: true}"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="trackingLink">Tracking Link</label> <br>
+                                <textarea name="" id="trackingLink" cols="80" rows="5" [(ngModel)]="_orderDetail.customer.trackingLink" [ngModelOptions]="{standalone: true}"></textarea>
                             </div>
                         </div>
 

@@ -1,8 +1,7 @@
 import { NgModule, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { SharedModule, addActionBarItem, addNavMenuSection } from '@vendure/admin-ui/core';
+import { SharedModule, addActionBarItem, addNavMenuSection,registerDashboardWidget } from '@vendure/admin-ui/core';
 import { OrderListCustomComponent } from './order-list-custom.component';
-// import { AddManualOrderComponent } from './modal/add-manual-order.component';
 // declare const $: any;
 
 import $ from 'jquery';
@@ -44,7 +43,35 @@ import $ from 'jquery';
             }],
           },
           // Add this section before the "settings" section
-          'settings')
+          'settings'),
+          registerDashboardWidget('graphBySalePerson', {
+            title: 'Report By Sales Person',
+            supportedWidths: [4, 6, 8, 12],
+            requiresPermissions: ['SuperAdmin'],
+            loadComponent: () =>
+              import('./dashboardWidget/OrderBySale/dashboard-widget.component').then(
+                m => m.ReviewsWidgetComponent,
+              ),
+          }),
+          registerDashboardWidget('graphByStock', {
+            title: 'Report for Stock',
+            supportedWidths: [4, 6, 8, 12],
+            requiresPermissions: ['SuperAdmin'],
+            loadComponent: () =>
+              import('./dashboardWidget/StockGraph/stock-widget.component').then(
+                m => m.StockWidgetComponent,
+              ),
+          }),
+          registerDashboardWidget('graphByOrderAmount', {
+            title: 'Report for Orders by amount - (Completed)',
+            supportedWidths: [4, 6, 8, 12],
+            requiresPermissions: ['SuperAdmin'],
+            loadComponent: () =>
+              import('./dashboardWidget/OrderByAmountGraph/order-amount-widget.component').then(
+                m => m.OrderAmountWidgetComponent,
+              ),
+          }),
+
     ],
 })
 export class OrderListCustomModule{

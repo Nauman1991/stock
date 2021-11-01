@@ -85,6 +85,8 @@ export class OrderSummaryComponent implements OnInit {
             paymentType : this.addtionalInfo.paymentType,
             conversationLink : this.addtionalInfo.conversationLink,
             notes : this.addtionalInfo.notes,
+            shippingAmount : this.addtionalInfo.shippingAmount,
+            trackingLink : this.addtionalInfo.trackingLink
         }
 
         let customAPIURL = `${this.apiURL}/orders/updateOrder`

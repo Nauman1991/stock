@@ -63,6 +63,10 @@
             <p style="color: #7138FF !important;">Profile Name</p>
             <span style="font-size: 22px;"><strong>{{orderSummary.customer.customFields[0].username_website}}</strong></span>
         </div>
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Shpping Amount</p>
+            <input type="number" id="shippingAmount" [(ngModel)]="addtionalInfo.shippingAmount">
+        </div>
 
         <div class="col-md-12">
             <p style="color: #7138FF !important;">Payment Type</p>
@@ -104,6 +108,11 @@
         <div class="col-md-12">
             <p style="color: #7138FF !important;">Notes</p>
             <textarea name="" id="" cols="80" rows="5" [(ngModel)]="addtionalInfo.notes"></textarea>
+        </div>
+
+        <div class="col-md-12">
+            <p style="color: #7138FF !important;">Tracking Link</p>
+            <textarea name="" id="" cols="80" rows="5" [(ngModel)]="addtionalInfo.trackingLink"></textarea>
         </div>
 
         <div class="col-md-12" style="top: 19px !important;

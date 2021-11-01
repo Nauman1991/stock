@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 console.log(hostname);
-if (hostname == '192.168.0.107' || hostname == '192.168.10.9' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
+if (hostname == '192.168.0.104' || hostname == '192.168.10.9' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
     var con = mysql.createConnection({
         host: "localhost",
         user: "root",
@@ -38,6 +38,14 @@ app.get('/', (req, res) => {
     console.log("Hello World!");
     res.send('Hello World!')
 })
+
+app.use(function(req, res, next) {
+    req.header("Content-Type", "application/json");
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "*");
+    res.header("Access-Control-Allow-Methods", "*");
+    next();
+});
 
 app.get('/fetchAramxCity', (req, res) => {
     var runner = require("child_process");

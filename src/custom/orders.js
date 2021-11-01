@@ -2,10 +2,11 @@ const express = require("express");
 const router = express.Router();
 var mysql = require('mysql');
 var os = require("os");
+const { resolve } = require("path");
 var hostname = os.hostname();
 
 
-if (hostname == '192.168.0.107' || hostname == '192.168.10.9' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
+if (hostname == '192.168.0.104' || hostname == '192.168.10.9' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
     var con = mysql.createConnection({
         host: "localhost",
         user: "root",
@@ -23,8 +24,9 @@ if (hostname == '192.168.0.107' || hostname == '192.168.10.9' || hostname == 'na
 
 router.get('/fetchOrders/:userChannel', (req, res) => {
     let userChannel = req.params.userChannel;
+    // let userChannel = "'1', '2', '3', '4', '5', '6'";
 
-    let orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId,sc.`company`,case when sc.`company`='1' then 'Aramex' when sc.`company`='2' then 'XTurbo' when sc.`company`='3' then 'Fastlo' when sc.`company`='4' then 'Custom' else '-' end as carrierName from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where occ.channelId = " + userChannel + " order by o.id DESC";
+    let orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId,sc.`company`,case when sc.`company`='1' then 'Aramex' when sc.`company`='2' then 'XTurbo' when sc.`company`='3' then 'Fastlo' when sc.`company`='4' then 'Custom' else '-' end as carrierName from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where occ.channelId IN (" + userChannel + ") order by o.id DESC";
     con.query(orderQuery, function(err, result) {
         if (err) throw err;
 
@@ -61,20 +63,39 @@ router.post('/updateOrder', (req, res) => {
         'sellerName': postData.sellerName,
         'paymentType': postData.paymentType,
         'conversationLink': postData.conversationLink,
-        'notes': postData.notes
+        'notes': postData.notes,
+        'trackingLink': postData.trackingLink,
+        'shippingAmount': postData.shippingAmount
     }]);
 
     let updateOrder = "UPDATE `order` SET customFields=" + "'" + customFields + "'" + " WHERE id=" + postData.orderID;
     con.query(updateOrder, function(err, updateOrderResult) {
         if (err) throw err;
-        let resp = {
-            code: 200,
-            status: true,
-            data: {}
-        };
-        res.json(resp);
     });
 
+    // let orderItem = postData.orderItem;
+    // let orderID = postData.orderID;
+
+    // Object.keys(orderItem).forEach(element => {
+    //     var val = orderItem[element];
+    //     let productVaientID = val.productVarientId;
+    //     let originalPrice = val.originalPrice;
+    //     let newPrice = val.newPrice;
+
+    //     let insertCustomOrderPrice = "INSERT INTO `custom_order_price` (order_id,product_variant_id,original_price,updated_price) VALUES (" + orderID + ", " + productVaientID + ", " + originalPrice + " ," + newPrice + ")";
+
+    //     con.query(insertCustomOrderPrice, function(err, insertCustomOrderPriceResult) {
+    //         if (err) throw err;
+    //     });
+    // });
+
+    let resp = {
+        code: 200,
+        status: true,
+        data: {}
+    };
+    res.json(resp);
+    return;
 })
 
 router.post('/updateOrderProduct', (req, res) => {
@@ -179,7 +200,7 @@ router.post('/editCustomOrder', (req, res) => {
         let queryStatus = '';
         let customOrderStatus = '';
 
-        if (orderStatus != 'cancelled' && orderStatus != 'completed' && orderStatus != 'shipped') {
+        if (orderStatus != 'cancelled' && orderStatus != 'shipped') {
             queryStatus = 'Modifying';
             customOrderStatus = orderStatus;
         } else {
@@ -209,7 +230,9 @@ router.post('/editCustomOrder', (req, res) => {
         'sellerName': customerData.sellerName,
         'paymentType': customerData.paymentType,
         'conversationLink': customerData.conversationLink,
-        'notes': customerData.notes
+        'notes': customerData.notes,
+        'shippingAmount': customerData.shippingAmount,
+        'trackingLink': customerData.trackingLink
     }]);
     let updateOrderCustomFieldsQuery = "UPDATE `order` SET customFields=" + "'" + customFields + "'" + " where id = " + customerData.id;
     con.query(updateOrderCustomFieldsQuery, function(err, updateOrderCustomFieldsQuery) {
@@ -286,11 +309,11 @@ router.post('/editCustomOrder', (req, res) => {
                     let updateStockAllocation = "";
                     let updateStockOnHand = "";
 
-                    console.log(`Minus Quantity : ${s}`);
-                    console.log(`ABS Minus Quantity : ${s}`);
-                    console.log(`Previous Stock On Hand : ${previousStockOnHand}`);
-                    console.log(`Previous Stock Allocation : ${previousStockAllocation}`);
-                    console.log(`New Quantity Allocation : ${parseInt(newQuantity)}`);
+                    // console.log(`Minus Quantity : ${s}`);
+                    // console.log(`ABS Minus Quantity : ${s}`);
+                    // console.log(`Previous Stock On Hand : ${previousStockOnHand}`);
+                    // console.log(`Previous Stock Allocation : ${previousStockAllocation}`);
+                    // console.log(`New Quantity Allocation : ${parseInt(newQuantity)}`);
 
                     if (s < 0) {
 
@@ -306,11 +329,11 @@ router.post('/editCustomOrder', (req, res) => {
                     // updateStockAllocation = newQuantity;
                     // updateStockOnHand = parseInt(previousStockAllocation) - parseInt(s);
 
-                    console.log(`Update Stock On Hand : ${updateStockAllocation}`);
-                    console.log(`Update Stock Allocation : ${updateStockOnHand}`);
+                    // console.log(`Update Stock On Hand : ${updateStockAllocation}`);
+                    // console.log(`Update Stock Allocation : ${updateStockOnHand}`);
 
                     let updateStockOrderQuery = `UPDATE product_variant set stockAllocated = ${updateStockAllocation} , stockOnHand = ${updateStockOnHand} where id = ${productVarientID}`;
-                    console.log(updateStockOrderQuery);
+                    // console.log(updateStockOrderQuery);
                     // return;
                     con.query(updateStockOrderQuery, function(err, updateStockOrderResult) {
                         if (err) throw err;
@@ -450,110 +473,7 @@ router.post('/getSearchOrder', (req, res) => {
         };
         res.json(resp);
     })
-
-
     return;
-
-
-    if (postData.pageName != '' && postData.sellerName == '') {
-        if (postData.trackingNumber || postData.username || postData.phoneNumber) {
-            condition = "AND";
-        } else {
-            condition = "OR";
-        }
-
-        let websiteCond = "";
-        if (postData.website) {
-            websiteCond = condition + "cai.`website` = '%" + postData.website + "%'";
-        }
-
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where (`code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' AND sc.`company` = '" + postData.shippingCarrier + "' " + websiteCond + " AND occ.channelId = " + userChannel + ") OR `customFields` REGEXP '" + pageNameJSON + "' group by o.code order by o.id DESC ";
-    } else if (postData.sellerName != '' && postData.pageName == '') {
-        if (postData.trackingNumber || postData.username || postData.phoneNumber) {
-            condition = "AND";
-        } else {
-            condition = "OR";
-        }
-
-        let websiteCond = "";
-        if (postData.website) {
-            websiteCond = condition + "cai.`website` = '%" + postData.website + "%'";
-        }
-
-        let shippingCarrCond = ""
-        if (postData.shippingCarrier) {
-            shippingCarrCond = "OR sc.`company` = '" + postData.shippingCarrier + "'";
-        }
-
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where (`code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' AND sc.`company` = '" + postData.shippingCarrier + "' " + websiteCond + " AND occ.channelId = " + userChannel + ")  AND `customFields` REGEXP '" + sellerNameJSON + "' group by o.code order by o.id DESC ";
-    } else if (postData.pageName != '' && postData.sellerName != '') {
-        if (postData.trackingNumber || postData.username || postData.phoneNumber) {
-            condition = "AND";
-        } else {
-            condition = "OR";
-        }
-
-        let websiteCond = "";
-        if (postData.website) {
-            websiteCond = condition + "cai.`website` = '%" + postData.website + "%'";
-        }
-
-        let shippingCarrCond = ""
-        if (postData.shippingCarrier) {
-            shippingCarrCond = "OR sc.`company` = '" + postData.shippingCarrier + "'";
-        }
-
-
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where `code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "'  " + websiteCond + " AND occ.channelId = " + userChannel + " " + condition + " " + shippingCarrCond + "  `customFields` REGEXP '" + pageNameJSON + "' AND `customFields` RLIKE '" + sellerNameJSON + "' group by o.code order by o.id DESC ";
-    } else if (postData.shippingCarrier) {
-        let condition = ""
-
-        if (postData.trackingNumber || postData.username || postData.phoneNumber) {
-            condition = "AND";
-        } else {
-            condition = "OR";
-        }
-
-
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where `code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' OR sc.`company` = '" + postData.shippingCarrier + "' AND occ.channelId = " + userChannel + "  group by o.id order by o.id DESC ";
-    } else {
-
-        let condition = ""
-
-        if (postData.trackingNumber || postData.username || postData.phoneNumber) {
-            condition = "AND";
-        } else {
-            condition = "OR";
-        }
-
-
-        let websiteCond = "";
-        if (postData.website) {
-            websiteCond = condition + "cai.`website` = '%" + postData.website + "%'";
-        }
-
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where `code` = '" + postData.trackingNumber + "' AND `title` = '" + postData.username + "' AND c.`phoneNumber` = '" + postData.phoneNumber + "' AND sc.`company` = '" + postData.shippingCarrier + "' " + websiteCond + " AND occ.channelId = " + userChannel + "  group by o.id order by o.id DESC ";
-    }
-
-
-
-
-
-
-
-    console.log(orderQuery);
-
-    con.query(orderQuery, function(err, result) {
-        if (err) throw err;
-
-        var rows = JSON.parse(JSON.stringify(result));
-        let resp = {
-            code: 200,
-            status: true,
-            data: { rows }
-        };
-        res.json(resp);
-    })
 
 })
 
@@ -565,7 +485,7 @@ router.post('/getOrderByStatus', (req, res) => {
 
     let orderQuery = "";
     if (status) {
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.* from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where o.customState = '" + status + "' AND occ.channelId = " + userChannel + "  order by o.id DESC";
+        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.* from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where o.customState = '" + status + "' AND occ.channelId IN (" + userChannel + ")  order by o.id DESC";
     } else {
         orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.* from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id`  AND occ.channelId = " + userChannel + "  order by o.id DESC";
     }
@@ -573,17 +493,17 @@ router.post('/getOrderByStatus', (req, res) => {
 
 
     con.query(orderQuery, function(err, result) {
-        if (err) throw err;
+            if (err) throw err;
 
-        var rows = JSON.parse(JSON.stringify(result));
-        let resp = {
-            code: 200,
-            status: true,
-            data: { rows }
-        };
-        res.json(resp);
-    })
-    console.log(postData);
+            var rows = JSON.parse(JSON.stringify(result));
+            let resp = {
+                code: 200,
+                status: true,
+                data: { rows }
+            };
+            res.json(resp);
+        })
+        // console.log(postData);
 })
 
 router.get('/fetchStock/:userID/:userChannelID', (req, res) => {
@@ -594,7 +514,6 @@ router.get('/fetchStock/:userID/:userChannelID', (req, res) => {
     // let productVarientQuery = "SELECT pv.`sku`,pv.`stockOnHand`,pv.`stockAllocated`,pvt.`name` as productVarientName,pt.`name` as productName,pvp.`price` as productVarientPrice from product_variant as pv join product as p on p.id = pv.`productId` join product_variant_translation as pvt	on pvt.`baseId` = pv.id join `product_translation` as pt on pt.`baseId` = p.id join `product_variant_price` as pvp on pvp.`variantId` = pv.id join `product_variant_channels_channel` as pvcc on pvcc.`productVariantId` = pv.id where pvcc.`channelId` = '" + userChannelID + "' group by pv.id";
     let productVarientQuery = "SELECT pv.`sku`,pv.`stockOnHand`,pv.`stockAllocated`,pvt.`name` as productVarientName,pt.`name` as productName,pvp.`price` as productVarientPrice,pva.`assetId` as assetID , a.`source` as imageSource , a.preview as imagePreview, pv.createdAt,pv.updatedAt,count(ol.id) as totalOrderCount from product_variant as pv join product as p on p.id = pv.`productId` join product_variant_translation as pvt on pvt.`baseId` = pv.id join `product_translation` as pt on pt.`baseId` = p.id join `product_variant_price` as pvp on pvp.`variantId` = pv.id join `product_variant_channels_channel` as pvcc on pvcc.`productVariantId` = pv.id left join `product_variant_asset` as pva on pva.`productVariantId` = pv.id left join asset as a on a.id = assetID left join order_line as ol on ol.`productVariantId` = pv.id where pvcc.`channelId` = '" + userChannelID + "' group by pv.id";
 
-    console.log(productVarientQuery);
 
     con.query(productVarientQuery, function(err, result) {
         if (err) throw err;
@@ -619,7 +538,7 @@ router.get('/getOrderCountVariant/:productVariantID/:userChannelID', (req, res, 
 
     let productVarientQuery = "SELECT pv.`sku`,pv.`stockOnHand`,pv.`stockAllocated`,pvt.`name` as productVarientName,pt.`name` as productName,pvp.`price` as productVarientPrice,pva.`assetId` as assetID , a.`source` as imageSource , a.preview as imagePreview, pv.createdAt,pv.updatedAt,count(ol.id) as totalOrderCount from product_variant as pv join product as p on p.id = pv.`productId` join product_variant_translation as pvt on pvt.`baseId` = pv.id join `product_translation` as pt on pt.`baseId` = p.id join `product_variant_price` as pvp on pvp.`variantId` = pv.id join `product_variant_channels_channel` as pvcc on pvcc.`productVariantId` = pv.id left join `product_variant_asset` as pva on pva.`productVariantId` = pv.id left join asset as a on a.id = assetID left join order_line as ol on ol.`productVariantId` = pv.id where pvcc.`channelId` = '" + userChannel + "' AND pv.id = " + productVariantID + " group by pv.id";
 
-    console.log(productVarientQuery);
+    // console.log(productVarientQuery);
 
     con.query(productVarientQuery, function(err, result) {
         if (err) throw err;
@@ -634,5 +553,136 @@ router.get('/getOrderCountVariant/:productVariantID/:userChannelID', (req, res, 
         res.json(resp);
     })
 })
+
+router.get('/fetchBySale', async(req, res, next) => {
+    // The # of orders made by sales folks(BAYAN,ALAA'A, ...............) in the default channel monthely AND DAILY in each country  (SUPERADMIN)
+
+    await orderBySalesCustom().then((data) => {
+        let salesResp = {
+            code: 200,
+            status: true,
+            data: data
+        };
+        return res.json(salesResp);
+    });
+
+})
+
+router.get('/fetchByStock', async(req, res, next) => {
+    //     showing the real value of the remaining products in the stock by adding the prices WITH THE STOCK ON HAND AND ADDING up ALL THE RESULT TOGETHER in each COUNTRY (SUPERADMIN)
+    // FOR EXAMPLE 
+    // SAUDI = 7800
+    await stockGraph().then((stockData) => {
+        let stockResp = {
+            code: 200,
+            status: true,
+            data: stockData
+        };
+        return res.json(stockResp);
+    });;
+})
+
+router.get('/fetchByOrderAmount', async(req, res, next) => {
+    // Calculating the values of orders in each COUNTRY by adding full price of the orders that are in completed states (SUPERADMIN)
+    await orderAmountGraph().then((orderAmountData) => {
+        let stockResp = {
+            code: 200,
+            status: true,
+            data: orderAmountData
+        };
+        return res.json(stockResp);
+    });;
+})
+
+async function orderBySalesCustom() {
+    return new Promise((resolve, reject) => {
+        const orderQuery = "SELECT c.code as channelName,o.* From `order` as o join `order_channels_channel` as occ on occ.`orderId` = o.id join `channel` as c on c.id = occ.`channelId`";
+
+        con.query(orderQuery, function(err, result) {
+            if (err) {
+                return reject();
+            };
+
+            var rows = JSON.parse(JSON.stringify(result));
+
+            var orderArr = {};
+            let len = 0;
+            rows.forEach((element, key) => {
+                len++;
+                let customFields = JSON.parse(element.customFields);
+                if (customFields) {
+                    let sellerName = customFields[0].sellerName;
+                    let channelName = element.channelName;
+                    if (orderArr[sellerName]) {
+                        orderArr[sellerName] = {
+                            sellerName: sellerName,
+                            orderCount: orderArr[sellerName].orderCount + 1,
+                            channelName: channelName,
+                            date: element.createdAt
+                        };
+                    } else {
+                        orderArr[sellerName] = {
+                            sellerName: sellerName,
+                            orderCount: 1,
+                            channelName: channelName,
+                            date: element.createdAt
+                        };
+                    }
+
+                }
+            });
+
+            return resolve(orderArr);
+        })
+
+    })
+
+}
+
+async function stockGraph() {
+    return new Promise((resolve, reject) => {
+        const stockQuery = "SELECT c.code as channelName,pvp.`price`,pv.`stockAllocated`,pv.`stockOnHand`, (pvp.`price` * pv.`stockOnHand`) as totalPrice from `product_variant_channels_channel` as pvcc join `product_variant` as pv on pvcc.`productVariantId` = pv.`id` join `product_variant_price` as pvp on (pvp.`channelId` = pvcc.`channelId` AND pvp.`variantId` = pv.id) join channel as c on c.id = pvcc.`channelId` group by pvcc.`productVariantId`,  pvcc.`channelId`"
+
+        con.query(stockQuery, function(err, stockResult) {
+            if (err) {
+                return reject();
+            };
+
+            var stockRows = JSON.parse(JSON.stringify(stockResult));
+            var stockArr = {};
+
+            stockRows.forEach((element, key) => {
+                let channelName = element.channelName;
+                if (stockArr[channelName]) {
+                    stockArr[channelName] = {
+                        price: element.price,
+                        stockOnHand: element.stockOnHand,
+                        totalPrice: stockArr[channelName].totalPrice + element.totalPrice,
+                    };
+                } else {
+                    stockArr[channelName] = {
+                        price: element.price,
+                        stockOnHand: element.stockOnHand,
+                        totalPrice: element.totalPrice
+                    };
+                }
+            });
+
+            return resolve(stockArr);
+        })
+
+    })
+}
+
+async function orderAmountGraph() {
+    return new Promise((resolve, reject) => {
+        const orderAmountQuery = "SELECT o.id,sum(o.`subTotal`) as totalAmount,c.code as channelName from `order` as o join `order_channels_channel` as occ on occ.`orderId` = o.id join channel as c on c.id = occ.`channelId` where o.`customState`='Completed' group by occ.`channelId`;";
+
+        con.query(orderAmountQuery, function(err, orderAmountResult) {
+            var stockRows = JSON.parse(JSON.stringify(orderAmountResult));
+            return resolve(stockRows);
+        })
+    })
+}
 
 module.exports = router;

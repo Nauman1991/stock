@@ -9,8 +9,9 @@ import { routes } from './app.routes';
 import { SharedExtensionsModule } from './shared-extensions.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ModalModule } from 'ngx-bootstrap/modal';
+import { ChartsModule } from 'ng2-charts';
 // import { ReactiveFormsModule } from '@angular/forms';
-// import { OrderListCustomComponent } from '../../ui-extensions/order-list-custom.component';
+// import { ReviewsWidgetModule } from '../../ui-extensions/dashboard-widget.module';
 
 @NgModule({
     declarations: [],
@@ -22,7 +23,9 @@ import { ModalModule } from 'ngx-bootstrap/modal';
         BrowserAnimationsModule,
         ModalModule.forRoot(),
         FormsModule,
-        BrowserModule
+        BrowserModule,
+        ChartsModule,
+        // ReviewsWidgetModule
     ],
     bootstrap: [AppComponent],
 })
