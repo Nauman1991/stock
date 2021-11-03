@@ -175,6 +175,7 @@ export class AddManualOrderComponent implements OnInit {
                   id
                   name
                   price
+                  priceWithTax
                   stockLevel
                   enabled
                   stockOnHand
@@ -198,7 +199,7 @@ export class AddManualOrderComponent implements OnInit {
                 this.products = [];
                 resp.forEach(element => {
                     let productVaient = element.variants;
-
+                   
                     productVaient.forEach(e => {
                         let imgSource = e.assets.length > 0 ? e.assets[0].source : 'http://localhost:4200/assets/source/no-image.jpeg';
                         this.hostname = window.location.hostname;
@@ -218,7 +219,7 @@ export class AddManualOrderComponent implements OnInit {
                                     productID: element.id,
                                     product_varient_id: e.id,
                                     product_varient_name: e.name,
-                                    product_varient_price: e.price,
+                                    product_varient_price: e.priceWithTax,
                                     product_varient_stock_level: e.stockLevel,
                                     product_varient_enabled: e.enabled,
                                     product_varient_stock_on_hand: e.stockOnHand,
@@ -232,6 +233,7 @@ export class AddManualOrderComponent implements OnInit {
                     });
 
                 });
+                
                 this.modalService.open(template, { windowClass: 'shippingModal' });
             });
     }

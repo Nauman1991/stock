@@ -100,6 +100,7 @@ export class OrderViewComponent implements OnInit {
     this._searchOrder.pageName = '';
     this._searchOrder.sellerName = '';
     this._searchOrder.shippingCarrier = '';
+    // this._orderDetail.customer.customAddress.streetLine1 = '';
     this._orderUpdate.product = [];
   }
 
@@ -145,6 +146,7 @@ export class OrderViewComponent implements OnInit {
     return this.http
       .get(customAPIURL)
       .subscribe((resp: any) => {
+        
         this.orders = resp.data.rows;
         this.orders.forEach((element: any, key: any) => {
           let customFields = JSON.parse(element.customFields);
@@ -185,6 +187,11 @@ export class OrderViewComponent implements OnInit {
                   id
                   firstName
                   lastName
+                  addresses {
+                    id
+                    streetLine1
+                    __typename
+                  }
                   __typename
                 }
                 lines {
@@ -352,6 +359,10 @@ export class OrderViewComponent implements OnInit {
                   sku
                   trackInventory
                   stockOnHand
+                  featuredAsset {
+                    preview
+                    __typename
+                  }
                   __typename
                 }
                 discounts {
@@ -391,7 +402,7 @@ export class OrderViewComponent implements OnInit {
       variables: { 'id': orderID }
     }).valueChanges
       .subscribe(({ data, loading }) => {
-
+        
         let arr: any = [];
         let product: any = [];
         this._orderDetailProduct = [];
@@ -420,8 +431,11 @@ export class OrderViewComponent implements OnInit {
           });
         });
         this._totalAmount;
-       
+        let customAddress = data.order.customer.addresses[0].streetLine1;
+
         this._orderDetail.customer = arr[0];
+        this._orderDetail.customer.customAddress = customAddress;
+        this._orderDetail.customer.code = data.order.code;
         this._orderDetail.detail = data.order;
         this._totalShippingAmount = (orderFind.shippingAmount) ? parseFloat(orderFind.shippingAmount) : 0;
         this._totalAmount = parseFloat(this._totalAmount);
@@ -652,9 +666,9 @@ export class OrderViewComponent implements OnInit {
     return this.http
       .post(customAPIURL, body, { headers: headers })
       .subscribe((resp: any) => {
-        // if (resp.code == 200) {
-        //   window.location.reload();
-        // }
+        if (resp.code == 200) {
+          window.location.reload();
+        }
       });
 
   }

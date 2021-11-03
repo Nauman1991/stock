@@ -22,15 +22,24 @@ if (hostname == '192.168.0.104' || hostname == '192.168.10.9' || hostname == 'na
     });
 }
 
-router.get('/fetchOrders/:userChannel', (req, res) => {
+router.get('/fetchOrders/:userChannel', async(req, res) => {
     let userChannel = req.params.userChannel;
     // let userChannel = "'1', '2', '3', '4', '5', '6'";
 
     let orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId,sc.`company`,case when sc.`company`='1' then 'Aramex' when sc.`company`='2' then 'XTurbo' when sc.`company`='3' then 'Fastlo' when sc.`company`='4' then 'Custom' else '-' end as carrierName from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where occ.channelId IN (" + userChannel + ") order by o.id DESC";
-    con.query(orderQuery, function(err, result) {
+    con.query(orderQuery, async function(err, result) {
         if (err) throw err;
-
         var rows = JSON.parse(JSON.stringify(result));
+
+        //loop through the rows for loop
+        for (let index = 0; index < rows.length; index++) {
+            const element = rows[index];
+            let orderId = element.id;
+            await orderLineTotalAmount(orderId).then((totalAmount) => {
+                rows[index].totalAmount = totalAmount;
+            });
+        }
+
         let resp = {
             code: 200,
             status: true,
@@ -39,6 +48,26 @@ router.get('/fetchOrders/:userChannel', (req, res) => {
         res.json(resp);
     })
 })
+
+//Promise to get total order line amount
+async function orderLineTotalAmount(orderID) {
+    return new Promise((resolve, reject) => {
+        let OrderLineQuery = "SELECT * from order_line as ol join order_item as oi on oi.lineId = ol.id where orderID = " + orderID;
+        let totalAmount = 0;
+        con.query(OrderLineQuery, function(err, orderLineResult) {
+            if (err) throw err;
+            var orderLineRows = JSON.parse(JSON.stringify(orderLineResult));
+
+            //loop through the rows
+            var orderLineTotalAmount = 0;
+            orderLineRows.forEach((ele, k) => {
+                orderLineTotalAmount += ele.listPrice;
+            });
+            totalAmount += orderLineTotalAmount;
+            resolve(totalAmount);
+        })
+    })
+}
 
 router.get('/fetchOrderDetail/:order_id', (req, res) => {
     let orderID = req.params.order_id;
@@ -120,12 +149,24 @@ router.post('/updateOrderProduct', (req, res) => {
             }];
             let taxLine = JSON.stringify(taxLineDesc);
             let orderItemQuery = `INSERT INTO order_item (initialListPrice,listPrice,listPriceIncludesTax,adjustments,taxLines,cancelled,lineId) VALUES ("${perOrderTotalPrice}" , "${perOrderTotalPrice}",0,'[]','${taxLine}',0,${orderLineID})`
-
+            console.log(perOrderTotalPrice);
             //5.7 Need to insert item as much as sold , custom loop
             for (let i = 0; i < productSold; i++) {
                 con.query(orderItemQuery, function(err, orderItemResult) { if (err) throw err; });
             }
 
+            //5.7.1 Update Order Amount in order table
+            let orders = "SELECT subTotalWithTax from `order` where id = " + orderID;
+            con.query(orders, (err, orderQueryResult) => {
+                let row = JSON.parse(JSON.stringify(orderQueryResult));
+                let preAmount = parseFloat(row[0].subTotalWithTax);
+                let newAmount = preAmount + parseFloat(perOrderTotalPrice);
+                let updateOrderAmountQuery = "UPDATE `order` set subTotal = " + newAmount + ",subTotalWithTax = " + newAmount + " where id = " + orderID;
+
+                con.query(updateOrderAmountQuery, function(err, updateOrderAmountQueryRes) {
+                    if (err) throw err;
+                })
+            })
         });
 
         //5.8 Get Stock and Update Stock
@@ -157,7 +198,6 @@ router.post('/updateOrderProduct', (req, res) => {
 
 router.post('/editCustomOrder', (req, res) => {
     let postData = req.body.data;
-
     let customerData = postData.customer;
 
     let orderStatus = customerData.status;
@@ -223,7 +263,11 @@ router.post('/editCustomOrder', (req, res) => {
 
     let updateCustomerQuery = `UPDATE customer SET title = '${title}', firstName = '${customerData.firstName}', lastName = '${customerData.lastName}' , phoneNumber = '${customerData.phoneNumber}' where id = ${customerID}`;
 
-    let updateCustomerAddQuery = `UPDATE customer_additional_info SET whatsapp_number = '${customerData.whatsapp_number}', username_website = '${customerData.username_website}', website = '${customerData.website}' , city = '${customerData.city}' where customerID = ${customerID}`
+    let updateCustomerAddQuery = `UPDATE customer_additional_info SET whatsapp_number = '${customerData.whatsapp_number}', username_website = '${customerData.username_website}', website = '${customerData.website}' , city = '${customerData.city}' where customerID = ${customerID}`;
+
+    let updateCustomerAddressQuery = `Update address SET streetLine1 = '${customerData.customAddress}' where customerID = ${customerID}`;
+
+    let updateTrackingCodeQuery = "UPDATE `order` set code = '" + customerData.code + "' where id = " + customerData.id;
 
     let customFields = JSON.stringify([{
         'pageName': customerData.pageName,
@@ -234,7 +278,9 @@ router.post('/editCustomOrder', (req, res) => {
         'shippingAmount': customerData.shippingAmount,
         'trackingLink': customerData.trackingLink
     }]);
+
     let updateOrderCustomFieldsQuery = "UPDATE `order` SET customFields=" + "'" + customFields + "'" + " where id = " + customerData.id;
+
     con.query(updateOrderCustomFieldsQuery, function(err, updateOrderCustomFieldsQuery) {
         if (err) throw err;
     });
@@ -244,6 +290,14 @@ router.post('/editCustomOrder', (req, res) => {
     });
 
     con.query(updateCustomerAddQuery, function(err, updateCustomerAddResult) {
+        if (err) throw err;
+    });
+
+    con.query(updateCustomerAddressQuery, function(err, updateCustomerAddressResult) {
+        if (err) throw err;
+    });
+
+    con.query(updateTrackingCodeQuery, function(err, updateTrackingCodeResult) {
         if (err) throw err;
     });
 

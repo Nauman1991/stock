@@ -52,6 +52,7 @@ app.get('/fetchAramxCity', (req, res) => {
     var phpScriptPath = "./php-script/index.php";
     runner.exec("php " + phpScriptPath, function(err, phpResponse, stderr) {
         if (err) console.log(err); /* log error */
+        console.log(phpResponse);
         let arr = phpResponse.split(',');
         let resp = {
             code: 200,

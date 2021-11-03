@@ -98,7 +98,7 @@
                     <td>{{order.fullName}}</td>
                     <td>{{order.phoneNumber}}</td>
                     <td>{{order.city}}</td>
-                    <td>{{order.subTotal}}</td>
+                    <td>{{order.totalAmount}}</td>
                     <td>{{order.code}}</td>
                     <td>{{order.customState}}</td>
                     <td>{{order.website}}</td>
@@ -164,12 +164,29 @@
                                 <td style="display: none;"><input style="width: 22%;" name="previousQuantity_{{i}}" type="text" [(ngModel)]="_orderDetailProduct[i].previousQuantity" [ngModelOptions]="{standalone: true}"></td>
                                 <td style="display: none;"><input style="width: 22%;" name="lineID{{i}}" type="text" [(ngModel)]="_orderDetailProduct[i].lineID" [ngModelOptions]="{standalone: true}"></td>
                                 <td style="display: none;"><input style="width: 22%;" name="productVarientID_{{i}}" type="text" [(ngModel)]="_orderDetailProduct[i].productVarientID" [ngModelOptions]="{standalone: true}"></td>
-                                <td><img src="{{item.featuredAsset.preview}}" alt="" style="height: 42px;"></td>
+                                <td *ngIf="item.productVariant.featuredAsset != null">
+                                    <img src="{{item.productVariant.featuredAsset.preview}}" alt="" style="height: 42px;">
+                                </td>
+                                <td *ngIf="item.productVariant.featuredAsset == null">
+                                    -
+                                </td>
                                 <td>{{item.productVariant.name}}</td>
                                 <td>{{item.productVariant.sku}}</td>
                                 <td><input style="width: 37%;" type="text" name="price_{{i}}" [(ngModel)]="_orderDetailProduct[i].price" [ngModelOptions]="{standalone: true}"></td>
                                 <td><input style="width: 22%;" type="text" name="quantity_{{i}}" [(ngModel)]="_orderDetailProduct[i].quantity" [ngModelOptions]="{standalone: true}"></td>
                                 <td>{{_orderDetailProduct[i].price * _orderDetailProduct[i].quantity}}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5"><strong>Amount</strong></td>
+                                <td>{{_totalAmount.toFixed(2)}}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5"><strong>Shipping Amount</strong></td>
+                                <td>{{_totalShippingAmount.toFixed(2)}}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5"><strong>Total Amount</strong></td>
+                                <td>{{(_totalShippingAmount + _totalAmount).toFixed(2)}}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -187,6 +204,18 @@
                             <div class="form-group">
                                 <label for="exampleInputEmail3">Surname</label> <br>
                                 <input type="email" class="form-control" id="exampleInputEmail3" placeholder="Last Name" [(ngModel)]="_orderDetail.customer.lastName" [ngModelOptions]="{standalone: true}">
+                            </div>
+                            <div class="form-group">
+                                <label for="customerAddress">Address</label> <br>
+                                <input type="text" class="form-control" id="customerAddress" placeholder="Customer Address" [(ngModel)]="_orderDetail.customer.customAddress" [ngModelOptions]="{standalone: true}">
+                            </div>
+                            <div class="form-group">
+                                <label for="customerTrackingNumber">Tracking Number</label> <br>
+                                <input type="text" class="form-control" id="customerTrackingNumber" placeholder="Tracking Number" [(ngModel)]="_orderDetail.customer.code" [ngModelOptions]="{standalone: true}">
+                            </div>
+                            <div class="form-group">
+                                <label for="shippingAmount">Shipping Amount</label> <br>
+                                <input type="email" class="form-control" id="shippingAmount" placeholder="Shipping Amount" [(ngModel)]="_orderDetail.customer.shippingAmount" [ngModelOptions]="{standalone: true}">
                             </div>
                             <div class="form-group">
                                 <label for="exampleInputEmail3">Phone Number</label> <br>
@@ -253,17 +282,23 @@
                             </div>
                             <div class="form-group">
                                 <label for="exampleInputEmail3Conversation">Conversation Link</label> <br>
-                                <textarea name="" id="exampleInputEmail3Conversation" cols="80" rows="5" [(ngModel)]="_orderDetail.customer.conversationLink"></textarea>
+                                <textarea name="" id="exampleInputEmail3Conversation" cols="80" rows="5" [(ngModel)]="_orderDetail.customer.conversationLink" [ngModelOptions]="{standalone: true}"></textarea>
                             </div>
 
                             <div class="form-group">
                                 <label for="exampleInputEmail3Notes">Notes</label> <br>
-                                <textarea name="" id="exampleInputEmail3Notes" cols="80" rows="5" [(ngModel)]="_orderDetail.customer.notes"></textarea>
+                                <textarea name="" id="exampleInputEmail3Notes" cols="80" rows="5" [(ngModel)]="_orderDetail.customer.notes" [ngModelOptions]="{standalone: true}"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="trackingLink">Tracking Link</label> <br>
+                                <textarea name="" id="trackingLink" cols="80" rows="5" [(ngModel)]="_orderDetail.customer.trackingLink" [ngModelOptions]="{standalone: true}"></textarea>
                             </div>
                         </div>
 
                     </form>
                 </div>
+
             </div>
         </div>
     </div>
