@@ -26,8 +26,8 @@ export class OrderViewComponent implements OnInit {
   _orderDetailProduct: any = [];
   productStock: any = [];
   _orderUpdate: any = [];
-  _totalAmount:any='';
-  _totalShippingAmount:any='';
+  _totalAmount: any = '';
+  _totalShippingAmount: any = '';
 
   products: any = [];
   _searchOrder: any = {};
@@ -124,12 +124,12 @@ export class OrderViewComponent implements OnInit {
 
     }).valueChanges
       .subscribe(({ data, loading }) => {
-        let channelID :any = [] ;
-        data.me.channels.forEach((element:any) => {
-            channelID.push(element.id);
+        let channelID: any = [];
+        data.me.channels.forEach((element: any) => {
+          channelID.push(element.id);
         });
         this.userChannel = channelID.join(',');
-        
+
       });
   }
 
@@ -146,7 +146,7 @@ export class OrderViewComponent implements OnInit {
     return this.http
       .get(customAPIURL)
       .subscribe((resp: any) => {
-        
+
         this.orders = resp.data.rows;
         this.orders.forEach((element: any, key: any) => {
           let customFields = JSON.parse(element.customFields);
@@ -156,7 +156,7 @@ export class OrderViewComponent implements OnInit {
           this.orders[key].sellerName = (customFields) ? customFields[0].sellerName : '';
           this.orders[key].conversationLink = (customFields) ? customFields[0].conversationLink : '';
           this.orders[key].notes = (customFields) ? customFields[0].notes : '';
-          this.orders[key].shippingAmount = (customFields) ? customFields[0].shippingAmount : '';
+          this.orders[key].shippingAmount = (customFields && customFields[0].shippingAmount > 0) ? parseFloat(customFields[0].shippingAmount) : 0;
           this.orders[key].trackingLink = (customFields) ? customFields[0].trackingLink : '';
           // }
 
@@ -359,6 +359,8 @@ export class OrderViewComponent implements OnInit {
                   sku
                   trackInventory
                   stockOnHand
+                  price
+                  priceWithTax
                   featuredAsset {
                     preview
                     __typename
@@ -402,11 +404,11 @@ export class OrderViewComponent implements OnInit {
       variables: { 'id': orderID }
     }).valueChanges
       .subscribe(({ data, loading }) => {
-        
+
         let arr: any = [];
         let product: any = [];
         this._orderDetailProduct = [];
-        this._totalAmount = 0 ;
+        this._totalAmount = 0;
 
         let orderFind = this.orders.find(function (value, index) {
           if (value.id === orderID) {
@@ -420,26 +422,81 @@ export class OrderViewComponent implements OnInit {
 
         product.forEach((element: any, key: any) => {
           element.lines.forEach((ele: any, key2: any) => {
-            this._totalAmount += ele.proratedUnitPrice * ele.items.length ;
-            this._orderDetailProduct.push({
-              previousQuantity: ele.items.length,
-              price: ele.proratedUnitPrice / ele.items.length,
-              quantity: ele.items.length,
-              lineID: ele.id,
-              productVarientID: ele.productVariant.id
-            })
+                let variantPrice = 0 ;
+                let priceObj = 0 ;
+                let lessAmount = false ;
+                if(ele.proratedUnitPrice <= 5){
+                  lessAmount = true ;
+                  variantPrice = ele.productVariant.priceWithTax / 100;
+                  priceObj = variantPrice;
+                }else{
+                  variantPrice = ele.proratedUnitPrice;
+                  priceObj = variantPrice / ele.items.length;
+                }
+
+                if(lessAmount){
+                  this._totalAmount += variantPrice * ele.items.length;
+                }else{
+                  this._totalAmount += variantPrice ;
+                }
+                
+                this._orderDetailProduct.push({
+                  previousQuantity: ele.items.length,
+                  price: priceObj,
+                  quantity: ele.items.length,
+                  lineID: ele.id,
+                  productVarientID: ele.productVariant.id
+                })
+
+            // if (ele.proratedUnitPrice <= 0) {
+            //   //Fetch Prdocut Variant Price
+            //   this.hostname = window.location.hostname;
+            //   if (this.hostname == 'localhost') {
+            //     this.customAPIPATH = "http://localhost:5001";
+            //   } else {
+            //     this.customAPIPATH = "http://3.23.29.252:5001";
+            //   }
+
+            //   let customAPIURLP = `${this.customAPIPATH}/orders/getProductVariantPrice/${ele.productVariant.id}`;
+            //   this.http.get(customAPIURLP).subscribe((res: any) => {
+            //     let amount = (res.data.productVariantPrice / 100);
+            //     // debugger
+            //     this._totalAmount += amount * ele.items.length;
+            //     this._orderDetailProduct.push({
+            //       previousQuantity: ele.items.length,
+            //       // price: ele.proratedUnitPrice / ele.items.length,
+            //       price: amount,
+            //       quantity: ele.items.length,
+            //       lineID: ele.id,
+            //       productVarientID: ele.productVariant.id
+            //     })
+
+            //   });
+            // }else{
+            //    this._totalAmount += ele.proratedUnitPrice ;
+            //     this._orderDetailProduct.push({
+            //       previousQuantity: ele.items.length,
+            //       price: ele.proratedUnitPrice / ele.items.length,
+            //       quantity: ele.items.length,
+            //       lineID: ele.id,
+            //       productVarientID: ele.productVariant.id
+            //     })
+            // }
+
+
+
+
           });
         });
-        this._totalAmount;
+        
         let customAddress = data.order.customer.addresses[0].streetLine1;
-
         this._orderDetail.customer = arr[0];
         this._orderDetail.customer.customAddress = customAddress;
         this._orderDetail.customer.code = data.order.code;
         this._orderDetail.detail = data.order;
         this._totalShippingAmount = (orderFind.shippingAmount) ? parseFloat(orderFind.shippingAmount) : 0;
         this._totalAmount = parseFloat(this._totalAmount);
-        
+
         this.modalService.open(template, { windowClass: 'shippingModal', size: 'lg' });
       });
 
@@ -572,7 +629,7 @@ export class OrderViewComponent implements OnInit {
                   } else {
                     orderPrice = e.price;
                   }
-                 
+
                   this.products.push({
                     productID: element.id,
                     product_varient_id: e.id,

@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 console.log(hostname);
-if (hostname == '192.168.0.104' || hostname == '192.168.10.9' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
+if (hostname == '192.168.0.100' || hostname == '192.168.10.3' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
     var con = mysql.createConnection({
         host: "localhost",
         user: "root",
@@ -276,7 +276,8 @@ function insertOrder(data, customerID, res, customerData) {
         //5.5 Add Item into Order Item Table
         data.product.forEach((element, key) => {
             let product_vaient_id = element.product_vaient_id;
-            let insertOrderLineQuery = "INSERT INTO `order_line` (productVariantId,taxCategoryId,featuredAssetId,orderId) VALUES (" + product_vaient_id + ", 1,1," + orderID + ")";
+            let featuredAssetID = null;
+            let insertOrderLineQuery = "INSERT INTO `order_line` (productVariantId,taxCategoryId,featuredAssetId,orderId) VALUES (" + product_vaient_id + ", 1," + featuredAssetID + "," + orderID + ")";
             con.query(insertOrderLineQuery, function(err, insertOrderLineResult) {
                 if (err) throw err;
                 let orderLineID = insertOrderLineResult.insertId;

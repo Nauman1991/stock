@@ -6,7 +6,7 @@ const { resolve } = require("path");
 var hostname = os.hostname();
 
 
-if (hostname == '192.168.0.104' || hostname == '192.168.10.9' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
+if (hostname == '192.168.0.100' || hostname == '192.168.10.3' || hostname == 'naumans-air' || hostname == '192.168.0.105') {
     var con = mysql.createConnection({
         host: "localhost",
         user: "root",
@@ -26,7 +26,7 @@ router.get('/fetchOrders/:userChannel', async(req, res) => {
     let userChannel = req.params.userChannel;
     // let userChannel = "'1', '2', '3', '4', '5', '6'";
 
-    let orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId,sc.`company`,case when sc.`company`='1' then 'Aramex' when sc.`company`='2' then 'XTurbo' when sc.`company`='3' then 'Fastlo' when sc.`company`='4' then 'Custom' else '-' end as carrierName from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where occ.channelId IN (" + userChannel + ") order by o.id DESC";
+    let orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId,sc.`company`,case when sc.`company`='1' then 'Aramex' when sc.`company`='2' then 'XTurbo' when sc.`company`='3' then 'Fastlo' when sc.`company`='4' then 'Custom' else '-' end as carrierName from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where occ.channelId IN (" + userChannel + ")  order by o.id DESC";
     con.query(orderQuery, async function(err, result) {
         if (err) throw err;
         var rows = JSON.parse(JSON.stringify(result));
@@ -52,17 +52,29 @@ router.get('/fetchOrders/:userChannel', async(req, res) => {
 //Promise to get total order line amount
 async function orderLineTotalAmount(orderID) {
     return new Promise((resolve, reject) => {
-        let OrderLineQuery = "SELECT * from order_line as ol join order_item as oi on oi.lineId = ol.id where orderID = " + orderID;
+        // let OrderLineQuery = "SELECT * from order_line as ol join order_item as oi on oi.lineId = ol.id where orderID = " + orderID + " group by productVariantId";
+
+        let OrderLineQuery = "SELECT *,(SELECT count(*) from order_item where lineID = ol.id) as itemQuantity from order_line as ol join order_item as oi on oi.lineId = ol.id join `product_variant_price` as pvc on pvc.`variantId` = ol.`productVariantId` join product_variant as pv on pvc.`variantId` = pv.id join tax_rate as tr on tr.`categoryId` = pv.`taxCategoryId` where orderID = " + orderID + " group by productVariantId";
+
         let totalAmount = 0;
         con.query(OrderLineQuery, function(err, orderLineResult) {
+            // console.log(orderLineResult);
             if (err) throw err;
             var orderLineRows = JSON.parse(JSON.stringify(orderLineResult));
-
+            // console.log(orderLineRows);
             //loop through the rows
             var orderLineTotalAmount = 0;
             orderLineRows.forEach((ele, k) => {
-                orderLineTotalAmount += ele.listPrice;
+                let price = ele.listPrice;
+                if (price <= 5) {
+                    let productVariantPrice = ele.price / 100;
+                    let taxRate = ((ele.value / 100) * productVariantPrice).toFixed(2);;
+                    price = (parseFloat(productVariantPrice) + parseFloat(taxRate)) * ele.itemQuantity;
+                    console.log(price);
+                }
+                orderLineTotalAmount += price;
             });
+
             totalAmount += orderLineTotalAmount;
             resolve(totalAmount);
         })
@@ -133,7 +145,8 @@ router.post('/updateOrderProduct', (req, res) => {
 
     postData.data.product.forEach((element, key) => {
         let product_vaient_id = element.product_vaient_id;
-        let insertOrderLineQuery = "INSERT INTO `order_line` (productVariantId,taxCategoryId,featuredAssetId,orderId) VALUES (" + product_vaient_id + ", 1,1," + orderID + ")";
+        let featuredAssetID = null;
+        let insertOrderLineQuery = "INSERT INTO `order_line` (productVariantId,taxCategoryId,featuredAssetId,orderId) VALUES (" + product_vaient_id + ", 1," + featuredAssetID + "," + orderID + ")";
         con.query(insertOrderLineQuery, function(err, insertOrderLineResult) {
             if (err) throw err;
             let orderLineID = insertOrderLineResult.insertId;
@@ -149,8 +162,8 @@ router.post('/updateOrderProduct', (req, res) => {
             }];
             let taxLine = JSON.stringify(taxLineDesc);
             let orderItemQuery = `INSERT INTO order_item (initialListPrice,listPrice,listPriceIncludesTax,adjustments,taxLines,cancelled,lineId) VALUES ("${perOrderTotalPrice}" , "${perOrderTotalPrice}",0,'[]','${taxLine}',0,${orderLineID})`
-            console.log(perOrderTotalPrice);
-            //5.7 Need to insert item as much as sold , custom loop
+                // console.log(perOrderTotalPrice);
+                //5.7 Need to insert item as much as sold , custom loop
             for (let i = 0; i < productSold; i++) {
                 con.query(orderItemQuery, function(err, orderItemResult) { if (err) throw err; });
             }
@@ -331,7 +344,8 @@ router.post('/editCustomOrder', (req, res) => {
                 con.query(deleteFromOrderLineQuery, function(err, deleteFromOrderLineResult) { if (err) throw err; });
 
                 //Add data into order_line and order_item;
-                let insertOrderLineQuery = "INSERT INTO `order_line` (productVariantId,taxCategoryId,featuredAssetId,orderId) VALUES (" + productVarientID + ", 1,1," + orderID + ")";
+                let featuredAssetID = null;
+                let insertOrderLineQuery = "INSERT INTO `order_line` (productVariantId,taxCategoryId,featuredAssetId,orderId) VALUES (" + productVarientID + ", 1," + featuredAssetID + "," + orderID + ")";
                 con.query(insertOrderLineQuery, function(err, insertOrderLineResult) {
                     if (err) throw err;
                     let orderLineID = insertOrderLineResult.insertId;
@@ -646,6 +660,23 @@ router.get('/fetchByOrderAmount', async(req, res, next) => {
         };
         return res.json(stockResp);
     });;
+})
+
+router.get('/getProductVariantPrice/:productVariantID', (req, res, next) => {
+    // get the price of the product variant
+    let productVariantID = req.params.productVariantID;
+    let productVariantPriceQuery = "SELECT pvp.`price` as productVariantPrice from product_variant_price as pvp where pvp.`variantId` = " + productVariantID + ";";
+    con.query(productVariantPriceQuery, function(err, result) {
+        if (err) throw err;
+        var rows = JSON.parse(JSON.stringify(result));
+        let productVariantPrice = rows[0].productVariantPrice;
+        let resp = {
+            code: 200,
+            status: true,
+            data: { productVariantPrice }
+        };
+        res.json(resp);
+    })
 })
 
 async function orderBySalesCustom() {

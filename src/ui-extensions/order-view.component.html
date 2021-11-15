@@ -98,7 +98,7 @@
                     <td>{{order.fullName}}</td>
                     <td>{{order.phoneNumber}}</td>
                     <td>{{order.city}}</td>
-                    <td>{{order.totalAmount}}</td>
+                    <td>{{(order.totalAmount + order.shippingAmount).toFixed(2)}}</td>
                     <td>{{order.code}}</td>
                     <td>{{order.customState}}</td>
                     <td>{{order.website}}</td>
