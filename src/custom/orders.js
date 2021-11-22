@@ -526,14 +526,24 @@ router.post('/getSearchOrder', (req, res) => {
     }
 
 
-    orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId as channelID,sc.`company`,case when sc.`company`='1' then 'Aramex' when sc.`company`='2' then 'XTurbo' when sc.`company`='3' then 'Fastlo' when sc.`company`='4' then 'Custom' else '-' end as carrierName from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where " + trackingNumberCond + " " + titleCond + " " + phoneCond + "  " + websiteCond + "   " + shippingCarrCond + "  " + pageNameCond + " " + sellerNameCond + " " + userChannelCond + " group by o.code order by o.id DESC ";
+    orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId,sc.`company`,case when sc.`company`='1' then 'Aramex' when sc.`company`='2' then 'XTurbo' when sc.`company`='3' then 'Fastlo' when sc.`company`='4' then 'Custom' else '-' end as carrierName from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where " + trackingNumberCond + " " + titleCond + " " + phoneCond + "  " + websiteCond + "   " + shippingCarrCond + "  " + pageNameCond + " " + sellerNameCond + " " + userChannelCond + " group by o.code order by o.id DESC ";
 
     // console.log(orderQuery);
 
-    con.query(orderQuery, function(err, result) {
+    con.query(orderQuery, async function(err, result) {
         if (err) throw err;
 
         var rows = JSON.parse(JSON.stringify(result));
+
+        //loop through the rows for loop
+        for (let index = 0; index < rows.length; index++) {
+            const element = rows[index];
+            let orderId = element.id;
+            await orderLineTotalAmount(orderId).then((totalAmount) => {
+                rows[index].totalAmount = totalAmount;
+            });
+        }
+
         let resp = {
             code: 200,
             status: true,
@@ -553,17 +563,29 @@ router.post('/getOrderByStatus', (req, res) => {
 
     let orderQuery = "";
     if (status) {
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.* from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where o.customState = '" + status + "' AND occ.channelId IN (" + userChannel + ")  order by o.id DESC";
+        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId,sc.`company`,case when sc.`company`='1' then 'Aramex' when sc.`company`='2' then 'XTurbo' when sc.`company`='3' then 'Fastlo' when sc.`company`='4' then 'Custom' else '-' end as carrierName from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where o.customState = '" + status + "' AND occ.channelId IN (" + userChannel + ")  order by o.id DESC";
+
+        // orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.* from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where o.customState = '" + status + "' AND occ.channelId IN (" + userChannel + ")  order by o.id DESC";
     } else {
-        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.* from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id`  AND occ.channelId = " + userChannel + "  order by o.id DESC";
+        orderQuery = "Select c.title as fullName ,c.firstName,c.lastName,c.phoneNumber as phoneNumber,cai.`city`,cai.`website`,cai.`username_website`,cai.`whatsapp_number`,ct.`name` as countryName,o.*,occ.channelId,sc.`company`,case when sc.`company`='1' then 'Aramex' when sc.`company`='2' then 'XTurbo' when sc.`company`='3' then 'Fastlo' when sc.`company`='4' then 'Custom' else '-' end as carrierName from `order` as o join order_channels_channel as occ on occ.orderId = o.id join customer as c on c.id = o.customerId join customer_additional_info as cai on cai.`customerID` = c.id join country_translation as ct on ct.id = cai.`country` left join shipping_custom as sc on sc.`order_id` = o.`id` where occ.channelId IN (" + userChannel + ")  order by o.id DESC";
     }
 
 
 
-    con.query(orderQuery, function(err, result) {
+    con.query(orderQuery, async function(err, result) {
             if (err) throw err;
 
             var rows = JSON.parse(JSON.stringify(result));
+
+            //loop through the rows for loop
+            for (let index = 0; index < rows.length; index++) {
+                const element = rows[index];
+                let orderId = element.id;
+                await orderLineTotalAmount(orderId).then((totalAmount) => {
+                    rows[index].totalAmount = totalAmount;
+                });
+            }
+
             let resp = {
                 code: 200,
                 status: true,

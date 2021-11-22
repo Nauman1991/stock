@@ -149,16 +149,16 @@ export class OrderViewComponent implements OnInit {
 
         this.orders = resp.data.rows;
         this.orders.forEach((element: any, key: any) => {
-          let customFields = JSON.parse(element.customFields);
-          // if (customFields) {
+          let replcae = element.customFields.replace(/\n/g,'newline');
+          let customFields = JSON.parse(replcae);
+        
           this.orders[key].pageName = (customFields) ? customFields[0].pageName : '';
           this.orders[key].paymentType = (customFields) ? customFields[0].paymentType : '';
           this.orders[key].sellerName = (customFields) ? customFields[0].sellerName : '';
-          this.orders[key].conversationLink = (customFields) ? customFields[0].conversationLink : '';
-          this.orders[key].notes = (customFields) ? customFields[0].notes : '';
+          this.orders[key].conversationLink = (customFields && customFields[0].conversationLink) ? (customFields[0].conversationLink).replace(/newline/g, '\n') : '';
+          this.orders[key].notes = (customFields && customFields[0].notes) ? (customFields[0].notes).replace(/newline/g, '\n') : '';
           this.orders[key].shippingAmount = (customFields && customFields[0].shippingAmount > 0) ? parseFloat(customFields[0].shippingAmount) : 0;
           this.orders[key].trackingLink = (customFields) ? customFields[0].trackingLink : '';
-          // }
 
         });
         this._orderDetail.customer.status = 'shipped';
@@ -507,7 +507,7 @@ export class OrderViewComponent implements OnInit {
       customer: this._orderDetail.customer,
       orderProduct: this._orderDetailProduct
     }
-
+   
     let customAPIURL = `${this.customAPIPATH}/orders/editCustomOrder`;
     const body = { "data": data };
     const headers = new HttpHeaders()
@@ -537,16 +537,21 @@ export class OrderViewComponent implements OnInit {
         this.orders = {};
         this.orders = resp.data.rows;
         this.orders.forEach((element: any, key: any) => {
-          let customFields = JSON.parse(element.customFields);
-          this.orders[key].pageName = customFields[0].pageName;
-          this.orders[key].paymentType = customFields[0].paymentType;
-          this.orders[key].sellerName = customFields[0].sellerName;
+          let replcae = element.customFields.replace(/\n/g,'newline');
+          let customFields = JSON.parse(replcae);
+          this.orders[key].pageName = (customFields) ? customFields[0].pageName : '';
+          this.orders[key].paymentType = (customFields) ? customFields[0].paymentType : '';
+          this.orders[key].sellerName = (customFields) ? customFields[0].sellerName : '';
+          this.orders[key].conversationLink = (customFields && customFields[0].conversationLink) ? (customFields[0].conversationLink).replace(/newline/g, '\n') : '';
+          this.orders[key].notes = (customFields && customFields[0].notes) ? (customFields[0].notes).replace(/newline/g, '\n') : '';
+          this.orders[key].shippingAmount = (customFields && customFields[0].shippingAmount > 0) ? parseFloat(customFields[0].shippingAmount) : 0;
+          this.orders[key].trackingLink = (customFields) ? customFields[0].trackingLink : '';
         });
       });
   }
 
   searchOrderByStatus(status: any) {
-
+    
     let customAPIURL = `${this.customAPIPATH}/orders/getOrderByStatus`;
     const body = { "data": status, "userChannel": this.userChannel };
     const headers = new HttpHeaders()
@@ -559,10 +564,15 @@ export class OrderViewComponent implements OnInit {
         this.orders = {};
         this.orders = resp.data.rows;
         this.orders.forEach((element: any, key: any) => {
-          let customFields = JSON.parse(element.customFields);
-          this.orders[key].pageName = customFields[0].pageName;
-          this.orders[key].paymentType = customFields[0].paymentType;
-          this.orders[key].sellerName = customFields[0].sellerName;
+          let replcae = element.customFields.replace(/\n/g,'newline');
+          let customFields = JSON.parse(replcae);
+          this.orders[key].pageName = (customFields) ? customFields[0].pageName : '';
+          this.orders[key].paymentType = (customFields) ? customFields[0].paymentType : '';
+          this.orders[key].sellerName = (customFields) ? customFields[0].sellerName : '';
+          this.orders[key].conversationLink = (customFields && customFields[0].conversationLink) ? (customFields[0].conversationLink).replace(/newline/g, '\n') : '';
+          this.orders[key].notes = (customFields && customFields[0].notes) ? (customFields[0].notes).replace(/newline/g, '\n') : '';
+          this.orders[key].shippingAmount = (customFields && customFields[0].shippingAmount > 0) ? parseFloat(customFields[0].shippingAmount) : 0;
+          this.orders[key].trackingLink = (customFields) ? customFields[0].trackingLink : '';
         });
       });
   }
